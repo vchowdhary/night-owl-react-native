@@ -45,7 +45,7 @@ export default class HomeScreen extends React.Component {
     }
 
     static navigationOptions = {
-        header: null,
+        title: 'Login',
     };
 
     render() {
@@ -67,9 +67,10 @@ export default class HomeScreen extends React.Component {
                 type={Login}   
             />
             <Button
-                title="Sign Up!"
+                title="Login"
                 onPress={this._onSubmit}
             />
+            
         </View>
         ); 
     }
@@ -193,6 +194,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingTop: 20,
+    paddingLeft: 15,
+    paddingRight: 15
   },
   developmentModeText: {
     marginBottom: 20,
