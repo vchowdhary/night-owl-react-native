@@ -18,7 +18,19 @@ import { func, shape, string } from 'prop-types';
 
 import User from '../src/User';
 import t from 'tcomb-form-native';
+import { Location, TaskManager } from 'expo';
+const LOCATION_TASK_NAME = 'background-location-task';
 
+TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
+    if (error) {
+      // Error occurred - check `error.message` for more details.
+      return;
+    }
+    if (data) {
+      const { locations } = data;
+      // do something with the locations captured in the background
+    }
+});
 
 
 export default class LoginScreen extends React.Component {
@@ -43,6 +55,7 @@ export default class LoginScreen extends React.Component {
         };
         this._onSubmit = this.onSubmit.bind(this);
         this._login = this.login.bind(this);
+        this.startlocation = this.startlocation.bind(this);
     }
 
     static navigationOptions = {
@@ -158,11 +171,17 @@ export default class LoginScreen extends React.Component {
         console.log(value);
         this._login(value.username, value.password)
         await AsyncStorage.setItem('userToken', 'abc')
-        .then(() => {
+        .then( () => {
+            this.startlocation();
             this.props.navigation.navigate('Home');
         });
     }
 
+    async startlocation(){
+        await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+            accuracy: Location.Accuracy.Balanced,
+        });
+    }
     /**
      * Handles signup click.
      *
@@ -289,4 +308,3 @@ const styles = StyleSheet.create({
     color: '#2e78b7',
   },
 });
-

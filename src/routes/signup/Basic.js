@@ -7,9 +7,9 @@
 import React from 'react';
 import { bool, string, func } from 'prop-types';
 
-import LabeledInput from 'src/LabeledInput';
+import LabeledInput from '../../LabeledInput';
 
-import logoImage from 'public/images/logo-notext.svg';
+//import logoImage from 'public/images/logo-notext.svg';
 
 /**
  * Maximum text field length.

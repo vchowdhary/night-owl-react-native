@@ -10,13 +10,12 @@
 
 import React from 'react';
 import { bool, object, func } from 'prop-types';
-import LabeledInput from 'src/LabeledInput';
+import LabeledInput from '../../LabeledInput';
 
 //import { Group as ScaleInputGroup } from 'src/ScaleInput';
 
-import logoImage from 'public/images/logo-notext.svg';
-import XHRpromise from 'src/XHRpromise';
-import { hot } from 'react-hot-loader';
+//import logoImage from 'public/images/logo-notext.svg';
+import XHRpromise from '../../XHRpromise';
 
 const API = '/api/subjects';
 

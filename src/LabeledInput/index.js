@@ -6,9 +6,8 @@
 
 import React from 'react';
 import { string, bool } from 'prop-types';
-import classNames from 'classnames';
 
-import styles from './index.less';
+import styles from 'index.less';
 
 /**
  * Input with label.
