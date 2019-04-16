@@ -18,6 +18,7 @@ import { func, shape, string } from 'prop-types';
 
 import User from '../src/User';
 import t from 'tcomb-form-native';
+import Geolocation from '../src/Location';
 
 
 
@@ -159,6 +160,8 @@ export default class LoginScreen extends React.Component {
         this._login(value.username, value.password)
         await AsyncStorage.setItem('userToken', 'abc')
         .then(() => {
+            var location = new Geolocation();
+            location.enableLocationPermission(value.username);
             this.props.navigation.navigate('Home');
         });
     }

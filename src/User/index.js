@@ -17,7 +17,8 @@ import Map from '../Map';
  */
 const API = '/api/users/';
 const API2 = '/api/tokens/';
-const url = 'http://128.237.220.65:4500'
+const url = 'http://128.237.212.79:4500';
+//'http://128.237.220.65:4500'
 
 /**
  * Paths associated with the user interface.

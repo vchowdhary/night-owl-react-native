@@ -1,4 +1,5 @@
 import XHRpromise from '../XHRpromise';
+import Geolocation  from 'react-native-geolocation-service';
 /**
  * API base path.
  *
@@ -7,12 +8,13 @@ import XHRpromise from '../XHRpromise';
  * @type {string}
  */
 const API = '/api/locationtracking/';
+const url = 'http://169.154.230.112:4500';
 
 /**
  * Handles all location tracking
  * @private
  */
-class Geolocation{
+class Location{
     /**
      * Initializes location handler. 
      * @param {string} id - user ID
@@ -36,6 +38,7 @@ class Geolocation{
      * @param {string} userID - the userID
      */
     async updatePosition(position, userID){
+        console.log('Position');
         console.log(position.coords);
         console.log(userID);
         //console.log(typeof position);
@@ -47,22 +50,30 @@ class Geolocation{
 
         console.log('User id:');
         console.log(userID);
+        console.log(latitude);
+        console.log(longitude);
 
-        const { status } = await XHRpromise('PUT', API, {
-            contentType: 'application/json',
-            body: JSON.stringify({ latitude, longitude, userID })
+        await fetch(url + API, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                latitude: latitude,
+                longitude: longitude,
+                userID: userID
+              }),
+        })
+        .then(res => {
+            console.log(res.status)
+            if (res.status === 204){
+                console.log('Success!!');
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+            return error;
         });
-
-        switch (status) {
-            case 200:
-            case 201:
-            case 204:
-                break;
-            case 401:
-                throw new Error('Incorrect username/password.');
-            default:
-                throw new Error('Unknown error occurred.');
-        }
 
         //Map.updateMap(latitude, longitude);
         //this._id = id;
@@ -74,16 +85,15 @@ class Geolocation{
      * @param {string} userID - the user id 
      */
     async enableLocationPermission(userID){
-        if(this._enabled)
-        {
-            return;
-        }
-        navigator.geolocation.watchPosition(
+        //navigator.geolocation.requestAuthorization();
+        navigator.geolocation.getCurrentPosition(
             position => {
                 console.log('Updating');
+                console.log(position);
                 //console.log(id);
                 this.updatePosition(position, userID);
                 //console.log(this.getLocation(userID));
+                this.startLocationUpdates(userID);
             },
             error => console.log(JSON.stringify(error.message)),
             {
@@ -117,7 +127,8 @@ class Geolocation{
 
         console.log(JSON.stringify({ userID }));
 
-        const { status, responseText } = await XHRpromise('GET', API + '?userID=' + userID);
+        const { status, responseText } = await fetch('GET', 
+        API + '?userID=' + userID);
 
         switch (status) {
             case 200:
@@ -134,6 +145,17 @@ class Geolocation{
         console.log('responseText');
         //console.log({responseJSON.latitude, responseJSON.longitude});
         return { latitude: responseJSON.latitude, longitude: responseJSON.longitude };
+    }
+
+    startLocationUpdates(userID){
+        navigator.geolocation.watchPosition(position => {
+            console.log('Watching');
+            this.updatePosition(position, userID);
+        },
+        error => console.log(JSON.stringify(error.message)),
+        {
+            enableHighAccuracy: true
+        });
     }
 }
 Object.freeze(Location);
@@ -157,4 +179,4 @@ Object.freeze(Location);
   * stopLocationTracking()
   *     should stop tracking the user's location; will probably call at log out
   */
-export default Geolocation;
+export default Location;
