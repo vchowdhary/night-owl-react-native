@@ -7,7 +7,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Button
+  Button,
+  AsyncStorage,
 } from 'react-native';
 import { WebBrowser } from 'expo';
 
@@ -19,7 +20,8 @@ import User from '../src/User';
 import t from 'tcomb-form-native';
 
 
-export default class HomeScreen extends React.Component {
+
+export default class LoginScreen extends React.Component {
     /**
      * Initializes the component.
      *
@@ -39,13 +41,13 @@ export default class HomeScreen extends React.Component {
             password: '',
             message: null
         };
-
         this._onSubmit = this.onSubmit.bind(this);
         this._login = this.login.bind(this);
     }
 
     static navigationOptions = {
         title: 'Login',
+
     };
 
     render() {
@@ -55,6 +57,16 @@ export default class HomeScreen extends React.Component {
         } = this.state;
 
         const Form = t.form.Form;
+
+        const options = {
+            username :
+            {
+                error: 'Please enter your username.'
+            },
+            password: {
+                error: 'Please enter your password.'
+            }
+        }
 
         const Login = t.struct({
             username: t.String,
@@ -68,7 +80,7 @@ export default class HomeScreen extends React.Component {
             />
             <Button
                 title="Login"
-                onPress={this._onSubmit}
+                onPress={() => this._onSubmit()}
             />
             
         </View>
@@ -140,11 +152,15 @@ export default class HomeScreen extends React.Component {
      *
      * @private
      */
-    onSubmit() {
+    async onSubmit(props) {
         //console.log(this._form);
         const value = this._form.getValue();
         console.log(value);
-        this._login(value.username, value.password);
+        this._login(value.username, value.password)
+        await AsyncStorage.setItem('userToken', 'abc')
+        .then(() => {
+            this.props.navigation.navigate('Home');
+        });
     }
 
     /**
@@ -175,16 +191,8 @@ export default class HomeScreen extends React.Component {
         try {
             await User.login(username, password);
 
-            this.setState({ loading: false, redirect: true, message: null });
-
             return null;
         } catch (err) {
-            const message = <p className={styles.error}>
-                Login failed: {err.message}
-            </p>;
-
-            this.setState({ loading: false, message });
-
             return err;
         }
     }

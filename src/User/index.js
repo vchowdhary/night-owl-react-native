@@ -17,6 +17,7 @@ import Map from '../Map';
  */
 const API = '/api/users/';
 const API2 = '/api/tokens/';
+const url = 'http://128.237.220.65:4500'
 
 /**
  * Paths associated with the user interface.
@@ -165,7 +166,7 @@ class User {
             try {
                 const {
                     status, responseText
-                } = await XHRpromise('GET', API);
+                } = await XHRpromise('GET', url + API);
 
                 if (status === 200) {
                     const { id } = JSON.parse(responseText);
@@ -196,10 +197,9 @@ class User {
         console.log(id);
         console.log(password);
         
-        await fetch('http://169.254.40.75:4500' + API, {
+        await fetch(url + API, {
             method: 'PUT',
             headers: {
-                Accept: 'application/json',
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
@@ -211,11 +211,11 @@ class User {
             console.log(res.status)
             if (res.status === 204){
                 console.log('Success!!');
-                //Want to navigate here
             }
         })
         .catch((error) => {
             console.log(error);
+            return error;
         });
        
         this._id = id;
@@ -234,9 +234,10 @@ class User {
      * rejects with an error.
      */
     async logout() {
-        await XHRpromise('DELETE', "http://169.254.40.75:4500"+API, {
-            successStatus: 204
-        });
+        await fetch(url + API, {
+            method: 'delete'
+          })
+          .then(response => console.log(response.body));
 
         this._id = false;
         return this;
@@ -252,7 +253,7 @@ class User {
      * rejects with an error.
      */
     async signup(id, password, profile) {
-        const reqURL = `${"http://169.254.40.75:4500"+API}/${encodeURIComponent(id)}`;
+        const reqURL = `${url + API}/${encodeURIComponent(id)}`;
 
         console.log(id);
         console.log(password);
@@ -289,7 +290,7 @@ class User {
             throw new Error('Cannot delete account while not logged in!');
         }
 
-        const reqURL = `${"http://169.254.40.75:4500" + API}/${encodeURIComponent(id)}`;
+        const reqURL = `${url + API}/${encodeURIComponent(id)}`;
 
         const { status } = await XHRpromise('DELETE', reqURL);
 
@@ -311,7 +312,7 @@ class User {
      * @param {JSON} profile - new profile
      */
     async update(id, profile){
-        const reqURL = `${"http://169.254.40.75:4500" + API}/${encodeURIComponent(id)}`;
+        const reqURL = `${url + API}/${encodeURIComponent(id)}`;
 
         console.log(id);
         console.log(profile);

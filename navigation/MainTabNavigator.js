@@ -1,12 +1,17 @@
 import React from 'react';
-import { Platform } from 'react-native';
-import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
+import { AsyncStorage, Platform, View, Button, SafeAreaView, TouchableOpacity, Text, Alert } from 'react-native';
+import { createStackNavigator, createDrawerNavigator } from 'react-navigation';
+import {DrawerItems} from 'react-navigation';
 
 import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import LoginScreen from '../screens/LoginScreen';
+import SignOutScreen from '../screens/SignOutScreen';
+
+import User from '../src/User';
+
 
 const HomeStack = createStackNavigator({
   Home: HomeScreen,
@@ -54,23 +59,50 @@ SettingsStack.navigationOptions = {
   ),
 };
 
-const LoginStack = createStackNavigator({
-  Login: LoginScreen,
+const MyDrawerNavigator = createDrawerNavigator({
+    Links: {
+      screen: LinksScreen,
+    },
+    Home: {
+      screen: HomeScreen,
+    },
+    Settings: {
+      screen: SettingsScreen,
+    },
+    SignOut: {
+      screen: SignOutScreen,
+    },
+  },
+  {
+    contentComponent:(props) => (
+      <View style={{flex:1}}>
+          <SafeAreaView forceInset={{ top: 'always', horizontal: 'never' }}>
+            <DrawerItems {...props} />
+            <TouchableOpacity onPress={()=>
+              Alert.alert(
+                'Log out',
+                'Do you want to logout?',
+                [
+                  {text: 'Cancel', onPress: () => {return null}},
+                  {text: 'Confirm', onPress: () => {
+                    AsyncStorage.clear();
+                    User.logout();
+                    props.navigation.navigate('Login');
+                  }
+                  },
+                ],
+                { cancelable: false }
+              )  
+            }>
+              <Text style={{margin: 16,fontWeight: 'bold'}}>Logout</Text>
+            </TouchableOpacity>
+          </SafeAreaView>
+      </View>
+    ),
+    drawerOpenRoute: 'DrawerOpen',
+    drawerCloseRoute: 'DrawerClose',
+    drawerToggleRoute: 'DrawerToggle'
 });
 
-LoginStack.navigationOptions = {
-  tabBarLabel: 'Login',
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={Platform.OS === 'ios' ? 'ios-options' : 'md-options'}
-    />
-  ),
-};
 
-export default createBottomTabNavigator({
-  HomeStack,
-  LinksStack,
-  SettingsStack,
-  LoginStack,
-});
+export default MyDrawerNavigator;
