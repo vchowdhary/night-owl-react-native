@@ -6,11 +6,12 @@
 
 import React from 'react';
 import { func, string, bool, node } from 'prop-types';
+import Octicon, { Plus } from '@githubprimer/octicons-react';
 import escapeStringRegexp from 'escape-string-regexp';
 
-import LabeledInput from '../../LabeledInput';
+import LabeledInput from 'src/LabeledInput';
 
-//import logoImage from 'public/images/logo-notext.svg';
+import logoImage from 'public/images/logo-notext.svg';
 
 /**
  * Maximum username length.

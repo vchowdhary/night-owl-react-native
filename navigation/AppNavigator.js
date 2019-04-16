@@ -3,12 +3,11 @@ import { createSwitchNavigator, createStackNavigator } from 'react-navigation';
 import LoginScreen from '../screens/LoginScreen'
 import AuthLoadingScreen from '../screens/AuthLoadingScreen'
 import { Text, Button } from 'react-native';
-import SignUpScreen from '../screens/SignUpScreen';
 
 
 import MainTabNavigator from './MainTabNavigator';
 
-const AuthStack = createStackNavigator({ Login: LoginScreen, SignUp: SignUpScreen });
+const AuthStack = createStackNavigator({ Login: LoginScreen });
 
 const navigationOptionsHeader=({navigation})=>{
     return {
