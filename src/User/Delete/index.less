@@ -1,0 +1,24 @@
+@import '~src/definitions';
+
+.danger {
+    background-color: @color-bg-danger;
+    color: @color-text-bg-danger;
+
+    &:hover {
+        background-color: darken(@color-bg-danger, 5%);
+    }
+
+    &:focus, &:active {
+        background-color: darken(@color-bg-danger, 10%);
+    }
+}
+
+.modal {
+    .modal({
+        > .buttons {
+            border: none;
+            padding: 0;
+        }
+    });
+}
+

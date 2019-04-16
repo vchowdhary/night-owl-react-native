@@ -1,0 +1,26 @@
+@import '~src/definitions';
+
+.match {
+    > *:not(:last-child) {
+        margin-bottom: 4 * @spacing-y;
+    }
+
+    form {
+        > section {
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+
+            > img {
+                max-height: 8 * @spacing-y;
+                max-width: 8 * @spacing-x;
+                margin-right: @spacing-x;
+            }
+        }
+    }
+
+    .error {
+        .flashError();
+    }
+}
+

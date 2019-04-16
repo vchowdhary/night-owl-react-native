@@ -1,0 +1,64 @@
+@import '~src/definitions';
+
+.scaleInput {
+    overflow-x: auto;
+
+    > table {
+        width: 100%;
+        border: none;
+        border-spacing: 0;
+
+        tr {
+            .text {
+                padding: @spacing-y @spacing-x;
+            }
+
+            > :first-child {
+                text-align: right;
+            }
+
+            > :last-child {
+                text-align: left;
+            }
+
+            > th, > td {
+                padding: 0;
+
+                text-align: center;
+            }
+
+            > td > label {
+                display: flex;
+                justify-content: center;
+
+                > .text {
+                    white-space: nowrap;
+                    min-width: 4 * @spacing-x;
+
+                    transition-property: color, background-color;
+                    transition-duration: @duration-transition;
+                }
+
+                &:hover, &:focus, &:active, &.checked {
+                    > .text {
+                        color: @color-bg;
+                        background-color: @color-text;
+                    }
+                }
+
+                > input[type=radio] {
+                    display: none;
+                }
+            }
+        }
+
+        tbody > tr:nth-child(odd) {
+            background-color: contrast(
+                @color-bg,
+                darken(@color-bg, 10%),
+                lighten(@color-bg, 10%)
+            );
+        }
+    }
+}
+

@@ -1,0 +1,20 @@
+{
+    "presets": [
+        ["@babel/preset-env", {
+            "useBuiltIns": "entry",
+            "targets": "defaults"
+        }],
+        "@babel/preset-react"
+    ],
+    "plugins": [
+        "react-hot-loader/babel"
+    ],
+    "env": {
+        "production": {
+            "presets": [
+                "minify"
+            ]
+        }
+    }
+}
+

@@ -1,0 +1,84 @@
+@import '~src/definitions';
+
+.logo {
+    flex-flow: row nowrap;
+
+    @font-size-logo: @font-size * 1.5;
+
+    .image {
+        height: @height-header;
+        min-width: @height-header;
+
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: center;
+        background-image: url('/images/logo-notext.svg');
+
+        .media-screen-sm({
+            background-image: url('/images/logo.svg');
+        });
+    }
+
+    .text {
+        font-size: @font-size-logo;
+        margin-left: @spacing-x;
+        text-align: center;
+        color: @color-text-light;
+
+        &::after {
+            content: 'Night Owl Bakery';
+
+            .media-screen-md({
+                content: 'NOB';
+            });
+
+            .media-screen-sm({
+                content: '';
+            });
+        }
+    }
+
+    .counter {
+        margin-left: @spacing-x;
+
+        &:after {
+            content: ' cookies sold';
+
+            .media-screen-sm({
+                content: ' cookies';
+            });
+        }
+    }
+}
+
+
+.header {
+    height: @height-header - 2 * @spacing-y;
+    padding: @spacing-y @spacing-x;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: @color-primary;
+
+    * {
+        color: @color-text;
+    }
+
+    > * {
+        display: flex;
+        align-items: center;
+    }
+
+    .account {
+        .menu {
+            left: unset;
+            right: 0;
+        }
+    }
+
+    .media-screen-sm({
+        height: @height-header-screen-sm - 2 * @spacing-y;
+    });
+}
+

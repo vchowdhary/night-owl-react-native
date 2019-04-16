@@ -1,0 +1,21 @@
+@import '~src/definitions';
+
+label.label {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: baseline;
+
+    > .required::after {
+        content: '*';
+        color: red;
+    }
+
+    > .label {
+        margin-right: @spacing-x;
+    }
+
+    > input:not([type=checkbox]):not([type=radio]) {
+        flex: 1;
+    }
+}
+

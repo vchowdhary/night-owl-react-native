@@ -1,0 +1,56 @@
+{
+  "name": "my-new-project",
+  "main": "node_modules/expo/AppEntry.js",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "eject": "expo eject",
+    "test": "node ./node_modules/jest/bin/jest.js --watchAll"
+  },
+  "jest": {
+    "preset": "jest-expo"
+  },
+  "dependencies": {
+    "@babel/plugin-syntax-class-properties": "^7.2.0",
+    "@babel/preset-env": "^7.4.3",
+    "@babel/preset-react": "^7.0.0",
+    "@expo/samples": "2.1.1",
+    "@google/maps": "^0.5.5",
+    "ansi-colors": "^3.2.4",
+    "babel-preset-minify": "^0.5.0",
+    "bcrypt": "^3.0.2",
+    "body-parser": "^1.18.3",
+    "connect-history-api-fallback": "^1.5.0",
+    "connect-session-sequelize": "^6.0.0",
+    "expo": "^31.0.2",
+    "express": "^4.16.4",
+    "express-promise-router": "^3.0.3",
+    "express-session": "^1.15.6",
+    "firebase": "^5.9.4",
+    "firebase-admin": "^7.2.0",
+    "google-map-react": "^1.1.2",
+    "google-maps-react": "^2.0.2",
+    "js-levenshtein": "^1.1.4",
+    "pandas": "0.0.3",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "python-shell": "^1.0.7",
+    "react": "16.5.0",
+    "react-dom": "^16.8.6",
+    "react-google-maps": "^9.4.5",
+    "react-hot-loader": "^4.8.4",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-31.0.0.tar.gz",
+    "react-native-maps": "^0.23.0",
+    "react-navigation": "^2.18.2",
+    "sequelize": "^4.42.0",
+    "sqlite3": "^4.0.6",
+    "tcomb-form-native": "^0.6.20",
+    "webpack-dev": "^1.1.1"
+  },
+  "devDependencies": {
+    "babel-preset-expo": "^5.0.0",
+    "jest-expo": "^31.0.0"
+  }
+}

@@ -1,0 +1,19 @@
+@import '~src/definitions';
+
+.profile {
+    display: flex;
+    flex-flow: column nowrap;
+
+    .bio {
+        white-space: pre-wrap;
+    }
+
+    .matches {
+        font-size: smaller;
+
+        > * {
+            margin-bottom: @spacing-y;
+        }
+    }
+}
+

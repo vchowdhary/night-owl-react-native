@@ -1,0 +1,114 @@
+@spacing-x: 8px;
+@spacing-y: 8px;
+
+@width-sm: 520px;
+@width-md: 768px;
+
+@width-container-max: @width-md;
+@height-header: 6 * @spacing-y;
+@height-header-screen-sm: 8 * @spacing-y;
+
+.media-screen-sm(@rules) {
+    @media screen and (max-width: @width-sm) {
+        @rules();
+    }
+}
+
+.media-screen-md(@rules) {
+    @media screen and (max-width: @width-md) {
+        @rules();
+    }
+}
+
+@font-size: 18px;
+@line-height: 1.1;
+
+@duration-transition: 0.2s;
+@duration-enter-exit: 0.3s;
+
+@z-index-header: 100;
+@z-index-modal: 1000;
+
+@color-primary: #3573FF;
+@color-bg: white;
+@color-bg-error: #FFBFBF;
+@color-bg-danger: red;
+@color-bg-disabled: rgb(85%, 85%, 85%);
+@color-bg-hover: tint(@color-primary, 25%);
+@color-bg-active: @color-primary;
+
+@color-text-dark: black;
+@color-text-light: white;
+@color-text: contrast(
+    @color-bg, @color-text-dark, @color-text-light
+);
+@color-text-bg-primary: contrast(
+    @color-primary, @color-text-dark, @color-text-light
+);
+@color-text-bg-hover: contrast(
+    @color-bg-hover, @color-text-dark, @color-text-light
+);
+@color-text-bg-active: contrast(
+    @color-bg-active, @color-text-dark, @color-text-light
+);
+@color-text-bg-error: contrast(
+    @color-bg-error, @color-text-dark, @color-text-light
+);
+@color-text-bg-danger: contrast(
+    @color-bg-danger, @color-text-dark, @color-text-light
+);
+@color-text-bg-disabled: contrast(
+    @color-bg-disabled, @color-text-dark, @color-text-light
+);
+
+.flashError() {
+    margin: 0;
+    padding: @spacing-y @spacing-x;
+    border: @border;
+    background: @color-bg-error;
+    color: @color-text-bg-error;
+}
+
+.modal(@rules) {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+
+    background-color: fadeout(black, 25%);
+
+    transition-property: opacity;
+    transition-duration: @duration-enter-exit;
+
+    &.enter, &.exit.exitActive {
+        opacity: 0;
+    }
+
+    &.exit, &.enter.enterActive {
+        opacity: 1;
+    }
+
+    > * {
+        background-color: @color-bg;
+        margin: @spacing-y @spacing-x;
+        padding: @spacing-y @spacing-x;
+
+        > *:not(:last-child) {
+            margin-bottom: @spacing-y;
+        }
+
+        @rules();
+    }
+}
+
+@border: 1px solid fadeout(@color-text, 75%);
+@border-primary: @spacing-x / 2 solid @color-primary;
+
+@box-shadow: 0 @spacing-y / 2 @spacing-y / 2 fadeout(@color-text, 75%);
+
