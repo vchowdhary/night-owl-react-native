@@ -7,47 +7,53 @@ import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import LoginScreen from '../screens/LoginScreen';
-import SignOutScreen from '../screens/SignOutScreen';
 
 import User from '../src/User';
 
 
 const HomeStack = createStackNavigator({
-  Home: HomeScreen,
+  Home: {
+    screen: HomeScreen,
+    navigationOptions: ({ navigation }) => ({
+      initialRouteName: 'Home',
+      headerMode: 'screen',
+      headerTitle: 'Home',
+      drawerLabel: 'Home',
+      headerLeft: <Button onPress={() => {
+        console.log('pressed');
+        //console.log(navigation);
+        navigation.toggleDrawer()}
+       } title= "="/>
+    }),
+  }
 });
 
-HomeStack.navigationOptions = {
-  tabBarLabel: 'Home',
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={
-        Platform.OS === 'ios'
-          ? `ios-information-circle${focused ? '' : '-outline'}`
-          : 'md-information-circle'
-      }
-    />
-  ),
-};
 
 const LinksStack = createStackNavigator({
   Links: LinksScreen,
+},
+{
+  navigationOptions: ({ navigation }) => ({
+    initialRouteName: 'Links',
+    headerMode: 'screen',
+    headerTitle: 'Links',
+    drawerLabel: 'Links',
+    headerLeft: <Button onPress={() => navigation.toggleDrawer()} title= "="/>
+  }),
 });
 
-LinksStack.navigationOptions = {
-  tabBarLabel: 'Links',
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={Platform.OS === 'ios' ? 'ios-link' : 'md-link'}
-    />
-  ),
-};
 
 const SettingsStack = createStackNavigator({
-  Settings: SettingsScreen,
-});
+  Settings: {
+    screen: SettingsScreen,
+    navigationOptions: ({ navigation }) => ({
+        initialRouteName: 'Settings',
+        headerMode: 'screen',
+        headerTitle: 'Settings',
+        drawerLabel: 'Settings',
+      headerLeft: <Button onPress={() => navigation.toggleDrawer()} title= "="/>
+    }),
+  }});
 
 SettingsStack.navigationOptions = {
   tabBarLabel: 'Settings',
@@ -59,19 +65,17 @@ SettingsStack.navigationOptions = {
   ),
 };
 
+
 const MyDrawerNavigator = createDrawerNavigator({
     Links: {
-      screen: LinksScreen,
+      screen: LinksStack,
     },
     Home: {
-      screen: HomeScreen,
+      screen: HomeStack,
     },
     Settings: {
-      screen: SettingsScreen,
-    },
-    SignOut: {
-      screen: SignOutScreen,
-    },
+      screen: SettingsStack
+    }
   },
   {
     contentComponent:(props) => (

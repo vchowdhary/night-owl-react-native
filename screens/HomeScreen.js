@@ -7,15 +7,31 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Button,
+  AsyncStorage
 } from 'react-native';
 import { WebBrowser } from 'expo';
 
 import { MonoText } from '../components/StyledText';
+import Geolocation from '../src/Location';
+
 
 export default class HomeScreen extends React.Component {
-  static navigationOptions = {
-    header: null,
-  };
+  constructor(props){
+    super(props);
+  }
+
+  
+  async componentDidMount(){
+    console.log('Params');
+    const id = await AsyncStorage.getItem("userToken");
+    console.log(id);
+    this._id = id;
+    console.log('id');
+    console.log(this._id);
+    var location = new Geolocation();
+    location.enableLocationPermission(this._id);
+  }
 
   render() {
     return (

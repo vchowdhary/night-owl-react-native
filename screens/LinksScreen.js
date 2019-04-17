@@ -1,8 +1,16 @@
 import React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, AsyncStorage } from 'react-native';
 import { ExpoLinksView } from '@expo/samples';
+import Geolocation from '../src/Location';
 
 export default class LinksScreen extends React.Component {
+  async componentDidMount(){
+    const id = await AsyncStorage.getItem("userToken");
+    console.log(id);
+    var location = new Geolocation();
+    location.enableLocationPermission(id);
+  }
+
   static navigationOptions = {
     title: 'Links',
   };

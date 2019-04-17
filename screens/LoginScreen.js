@@ -9,6 +9,7 @@ import {
   View,
   Button,
   AsyncStorage,
+  
 } from 'react-native';
 import { WebBrowser } from 'expo';
 
@@ -47,8 +48,7 @@ export default class LoginScreen extends React.Component {
     }
 
     static navigationOptions = {
-        title: 'Login',
-
+        title: 'Login'
     };
 
     render() {
@@ -158,13 +158,13 @@ export default class LoginScreen extends React.Component {
         const value = this._form.getValue();
         console.log(value);
         this._login(value.username, value.password)
-        await AsyncStorage.setItem('userToken', 'abc')
+        await AsyncStorage.setItem('userToken', value.username)
         .then(() => {
             var location = new Geolocation();
             location.enableLocationPermission(value.username);
             this.props.navigation.navigate('Home');
         });
-    }
+  }
 
     /**
      * Handles signup click.
