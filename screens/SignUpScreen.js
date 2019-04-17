@@ -14,7 +14,7 @@ import t from 'tcomb-form-native';
 
 import { MonoText } from '../components/StyledText';
 
-const url = 'http://128.237.192.56:4500';
+const url = 'http://128.237.212.15:4500';
 const API = '/api/subjects';
 
 const Form = t.form.Form;
@@ -27,8 +27,12 @@ export default class SignUpScreen extends React.Component {
     {
       tutoringSubjects: t.enums({}),
       deliveryCategories: t.enums({}),
-      options: {}
+      options: {},
+      value: {}
     }
+
+    this.onChange = this.onChange.bind(this);
+    this._form = null;
     
   }
   static navigationOptions = ({ navigation }) => {
@@ -76,6 +80,7 @@ export default class SignUpScreen extends React.Component {
                 return x["subject"]
               });
               console.log(subjects);
+              subjects.push("other");
               subjects = subjects.reduce(function(map, obj) {
                 map[obj] = obj;
                 return map;
@@ -88,6 +93,7 @@ export default class SignUpScreen extends React.Component {
               var subjects = old.map((x) => {
                 return x["category"]
               });
+              subjects.push("other");
               subjects = subjects.reduce(function(map, obj) {
                 map[obj] = obj;
                 return map;
@@ -104,6 +110,11 @@ export default class SignUpScreen extends React.Component {
 
   }
 
+  onChange(){
+    console.log('Changed');
+  
+  }
+
   render() {
     const options = {
       username :
@@ -115,8 +126,47 @@ export default class SignUpScreen extends React.Component {
       }
     }
     
+    const Time = t.enums(
+      {
+        5: "5 minutes away",
+        10: "10 minutes away",
+        15: "15 minutes away",
+        20: "20 minutes away",
+        25: "25 minutes away"
+      }
+    )
+
+    const Preference = t.enums(
+      {
+        1: 'Not at all',
+        2: 'Slightly',
+        3: 'Neutral',
+        4: 'Like',
+        5: 'Love'
+      }
+    )
+
+    const Rating = t.enums(
+      {
+        1: 'Novice',
+        2: 'Beginner',
+        3: 'Intermediate',
+        4: 'Skilled',
+        5: 'Expert'
+      }
+    )
+
+    const Subject = t.struct({
+      name: t.String,
+      details: t.String,
+      preference: Preference,
+      skill: Rating
+    })
+
     const TutoringSkills = t.struct({
-      subjects: this.state.tutoringSubjects
+      timetotutor: Time,
+      subjectDropdown: this.state.tutoringSubjects,
+      subjects: t.list(Subject)
     })
     
     const Info = t.struct({
@@ -133,6 +183,8 @@ export default class SignUpScreen extends React.Component {
             <Form ref={(c) => this._form = c} 
                 type={Info} 
                 options={this.state.options}  
+                value = {this.state.value}
+                onChange = {this.onChange}
             />
       </ScrollView>
       
