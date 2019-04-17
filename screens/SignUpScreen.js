@@ -88,7 +88,6 @@ export default class SignUpScreen extends React.Component {
               var subjects = old.map((x) => {
                 return x["category"]
               });
-              console.log(subjects);
               subjects = subjects.reduce(function(map, obj) {
                 map[obj] = obj;
                 return map;
@@ -130,12 +129,12 @@ export default class SignUpScreen extends React.Component {
     });
   
     return (
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
             <Form ref={(c) => this._form = c} 
                 type={Info} 
                 options={this.state.options}  
             />
-      </View>
+      </ScrollView>
       
     );
   }
