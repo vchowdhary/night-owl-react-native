@@ -77,12 +77,16 @@ export default class LoginScreen extends React.Component {
         return (
         <View style={styles.container}>
             <Form ref={(c) => this._form = c} 
-                type={Login}   
+                type={Login} 
+                options={options}  
             />
             <Button
                 title="Login"
                 onPress={() => this._onSubmit()}
             />
+
+            <Button title="Don't have an account? Sign up!"
+                    onPress = {() => this.props.navigation.navigate('SignUp')}/>
             
         </View>
         ); 

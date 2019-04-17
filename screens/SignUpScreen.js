@@ -7,60 +7,136 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Button
 } from 'react-native';
 import { WebBrowser } from 'expo';
+import t from 'tcomb-form-native';
 
 import { MonoText } from '../components/StyledText';
 
+const url = 'http://128.237.192.56:4500';
+const API = '/api/subjects';
+
+const Form = t.form.Form;
+
 export default class SignUpScreen extends React.Component {
-  static navigationOptions = {
-    header: null,
-  };
+  constructor(props){
+    super(props);
+
+    this.state =
+    {
+      tutoringSubjects: t.enums({}),
+      deliveryCategories: t.enums({}),
+      options: {}
+    }
+    
+  }
+  static navigationOptions = ({ navigation }) => {
+      return {
+        title: "Sign Up",
+      headerLeft: (
+        <Button
+          title="Cancel"
+          onPress={() => navigation.navigate('Login')}
+        />
+      ),
+    };
+  }
+
+  /**
+     * runs when component will mount
+     */
+    async componentWillMount() {
+      this.renderDropdown('tutoringSubjects');
+      console.log('Getting delivery categories');
+      this.renderDropdown('deliveryCategories');
+  }
+
+  /**
+  * Fetches options from database
+  * @param {string} key - key for service
+  */
+  async renderDropdown(key) {
+      console.log('Getting subjects');
+      await fetch(url + API + '?service=' + key, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        }
+      })
+      .then(res => {
+        console.log(res.status)
+        //console.log(res._bodyText);
+        if (res.status === 201){
+            console.log('Success!!');
+            if(key === 'tutoringSubjects'){
+              console.log("Subjects");
+              var old = JSON.parse(res._bodyText);
+              var subjects = old.map((x) => {
+                return x["subject"]
+              });
+              console.log(subjects);
+              subjects = subjects.reduce(function(map, obj) {
+                map[obj] = obj;
+                return map;
+              }, {});
+              this.setState({ [key]: t.enums(subjects) });
+            }
+            else{
+              console.log("Categories");
+              var old = JSON.parse(res._bodyText);
+              var subjects = old.map((x) => {
+                return x["category"]
+              });
+              console.log(subjects);
+              subjects = subjects.reduce(function(map, obj) {
+                map[obj] = obj;
+                return map;
+              }, {});
+              this.setState({ [key]: t.enums(subjects) });
+            }
+            
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+        return error;
+    });
+
+  }
 
   render() {
+    const options = {
+      username :
+      {
+          error: 'Please enter your username.'
+      },
+      password: {
+          error: 'Please enter your password.'
+      }
+    }
+    
+    const TutoringSkills = t.struct({
+      subjects: this.state.tutoringSubjects
+    })
+    
+    const Info = t.struct({
+        firstName: t.String,
+        lastName: t.String,
+        phoneNumber: t.String,
+        andrewId: t.String,
+        password: t.String,
+        tutoringSkills: TutoringSkills
+    });
+  
     return (
       <View style={styles.container}>
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-          <View style={styles.welcomeContainer}>
-            <Image
-              source={
-                __DEV__
-                  ? require('../assets/images/robot-dev.png')
-                  : require('../assets/images/robot-prod.png')
-              }
-              style={styles.welcomeImage}
+            <Form ref={(c) => this._form = c} 
+                type={Info} 
+                options={this.state.options}  
             />
-          </View>
-
-          <View style={styles.getStartedContainer}>
-            {this._maybeRenderDevelopmentModeWarning()}
-
-            <Text style={styles.getStartedText}>Get started by opening</Text>
-
-            <View style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-              <MonoText style={styles.codeHighlightText}>screens/HomeScreen.js</MonoText>
-            </View>
-
-            <Text style={styles.getStartedText}>
-              Change this text and your app will automatically reload.
-            </Text>
-          </View>
-
-          <View style={styles.helpContainer}>
-            <TouchableOpacity onPress={this._handleHelpPress} style={styles.helpLink}>
-              <Text style={styles.helpLinkText}>Help, it didn’t automatically reload!</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-
-        <View style={styles.tabBarInfoContainer}>
-          <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
-
-          <View style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-            <MonoText style={styles.codeHighlightText}>navigation/MainTabNavigator.js</MonoText>
-          </View>
-        </View>
       </View>
+      
     );
   }
 
