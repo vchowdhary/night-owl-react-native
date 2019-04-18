@@ -17,7 +17,8 @@ import Map from '../Map';
  */
 const API = '/api/users/';
 const API2 = '/api/tokens/';
-const url = 'http://128.237.135.97:4500';
+const url = 'http://128.237.113.186:4500';
+
 //'http://128.237.220.65:4500'
 
 /**

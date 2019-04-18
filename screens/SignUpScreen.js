@@ -10,13 +10,17 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
-  Picker
+  Picker,
+  FlatList,
+  Dimensions
 } from 'react-native';
-import {Button, Label, Input, Text} from 'react-native-elements';
+import {Button, Label, Input, Text, Slider} from 'react-native-elements';
 import  Accordion from 'react-native-collapsible/Accordion';
+import RNPickerSelect from 'react-native-picker-select';
+import Subject from './Subject';
 
 
-const url = 'http://128.237.135.97:4500';
+const url = 'http://128.237.113.186:4500';
 const API = '/api/subjects';
 
 
@@ -48,8 +52,9 @@ export default class SignUpScreen extends React.Component {
       deliveryNeeds: {
         timetopickup: 0
       },
-      activeSections: []
-
+      activeSections: [],
+      tutoringRows: [],
+      newTutoringSubject: ''
     }
 
     this.onChange = this.onChange.bind(this);
@@ -59,6 +64,10 @@ export default class SignUpScreen extends React.Component {
     this._renderHeader = this._renderHeader.bind(this);
     this._renderSectionTitle = this._renderSectionTitle.bind(this);
     this._updateSections = this._updateSections.bind(this);
+    this.SECTIONS = this.SECTIONS.bind(this);
+    this.Subject = this.Subject.bind(this);
+    this.addTutoringSubject = this.addTutoringSubject.bind(this);
+    this.pushToDatabase = this.pushToDatabase.bind(this);
     
   }
   static navigationOptions = ({ navigation }) => {
@@ -103,10 +112,11 @@ export default class SignUpScreen extends React.Component {
             if(key === 'tutoringSubjects'){
               console.log("Subjects");
               var old = JSON.parse(res._bodyText);
+             
               var subjects = old.map((x) => {
-                return x["subject"]
+                return {label: x["subject"], value: x["subject"]}
               });
-              subjects.push("Other");
+              subjects.push({label: "Other", value: "Other"});
               console.log(subjects);
               this.setState({ [key]: subjects });
             }
@@ -114,9 +124,9 @@ export default class SignUpScreen extends React.Component {
               console.log("Categories");
               var old = JSON.parse(res._bodyText);
               var subjects = old.map((x) => {
-                return x["category"]
+                return {"label": x["category"], "value": x["category"]}
               });
-              subjects.push("other");
+              subjects.push({label: "Other", value: "Other"});
               this.setState({ [key]: subjects });
             }
             
@@ -130,18 +140,104 @@ export default class SignUpScreen extends React.Component {
   }
 
   renderTutoringSubjects(){
-    return (<Picker
-      selectedValue={this.state.selectedsubject}
-      enabled={true}
-      onValueChange={(itemValue, itemIndex) =>
-        this.setState({selectedsubject: itemValue})
-      }>
-        {
-          (this.state.tutoringSubjects).map((x) => {
-            return (<Picker.Item label={x} value={x}/>);
-          })
+    const placeholder = {
+      label: 'Select a subject...',
+      value: null,
+      color: '#9EA0A4',
+    };
+    return (
+      <RNPickerSelect
+          placeholder={placeholder}
+          items={this.state.tutoringSubjects}
+          onValueChange={value => {
+            this.setState({
+              selectedsubject: value,
+            });
+          }}
+          value={this.state.selectedsubject}
+          style={{
+            ...pickerSelectStyles,
+            placeholder: {
+              color: 'gray',
+              fontSize: 12,
+              fontWeight: 'bold',
+            },
+          }}
+        />
+    );
+  }
+
+  Subject(props){
+    console.log("Creating Subject");
+    
+    const { name } = props;
+    console.log(props);
+    console.log(this.state.tutoring[[name]]);
+    return (
+      <View>
+        <Text h4>{(props.name).toUpperCase()}</Text>
+        <Text h5>Rate your skill from 1 to 5, with 1 being beginner and 5 being expert</Text>
+        <Text style={{
+                width: 50,
+                textAlign: 'center',
+                }}
+            >{Math.floor( this.state.tutoring[[name]]["rating"] )}</Text>
+        <Slider
+          value={this.state.tutoring[[name]]["rating"] !== undefined ? this.state.tutoring[[name]]["rating"] : 0}
+          onValueChange={value => {
+            var x = this.state.tutoring[[name]];
+            x.rating = value;
+            this.setState({tutoring: this.state.tutoring});
+          }}
+          step={1}
+          minimumValue={1}
+          maximumValue={5}
+        />
+      </View>);
+  }
+
+  /**
+     * Pushes new subject to the subject database
+     * @param {name} name - name of new subject
+     * @param {string} service - key of service
+     */
+    async pushToDatabase(name, service){
+      console.log('Pushing subjects');
+      await fetch(url + API, {
+          method: 'PUT',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name, service })
+      })
+      .then(res => {
+        console.log(res.status)
+        //console.log(res._bodyText);
+        if (res.status === 201){
+            console.log('Success!!');
         }
-    </Picker>);
+      })
+      .catch((error) => {
+          console.log(error);
+          return error;
+      });      
+  }
+
+  addTutoringSubject(){
+    console.log("pressed");
+    var x = this.state.tutoringRows;
+    var subject = this.state.selectedsubject === "Other" ? this.state.newTutoringSubject : this.state.selectedsubject;
+    x.push(subject);
+    this.setState({tutoringRows: x});
+    this.state.tutoring[subject] = {rating: 0, details: '', preference: 0};
+    this.setState({tutoring: this.state.tutoring});
+    console.log(this.state);
+    if (this.state.selectedsubject == "Other"){
+      this.pushToDatabase(this.state.newTutoringSubject, 'tutoring');
+      this.state.tutoringSubjects.push(this.state.newTutoringSubject);
+    }
+
   }
 
   onChange(value, field){
@@ -173,19 +269,37 @@ export default class SignUpScreen extends React.Component {
       this.setState({ activeSections });
     };
 
-  render() {
-    const SECTIONS = [
+  SECTIONS(){
+    const dimensions = Dimensions.get('window');
+    const screenWidth = dimensions.width;
+    return [
       {
         title: 'TUTORING SKILLS',
         content: <View>
           <Text h5>Please describe your tutoring skills. </Text>
               {this.renderTutoringSubjects()}
-              <Input
-                  onChangeText={(value) => { this.setState({newTutoringSubject: value})}}
-                  value={this.state.newTutoringSubject}
+          <Input
+            onChangeText={(value) => { this.setState({newTutoringSubject: value})}}
+            value={this.state.newTutoringSubject}
             label={"NEW SUBJECT"}
             editable={this.state.selectedsubject === "Other"}
-        />
+          />
+          <Button onPress={this.addTutoringSubject} title="Add Subject" />
+          <ScrollView>
+            <FlatList
+                  data={this.state.tutoringRows}
+                  style={{
+                    flex: 1,
+                  }}
+                  renderItem={({ item, index }) => 
+                  {
+                    console.log("Rendering");
+                    console.log(item);
+                    console.log(index);
+                    return (<this.Subject name={item}/>);}
+                }
+            />
+          </ScrollView>
         </View>,
       },
       {
@@ -201,8 +315,13 @@ export default class SignUpScreen extends React.Component {
         content: <Text h5>''</Text>,
       }
     ];
+  }
+
+  render() {
+  
+  
     return (
-      <View styles={styles.welcomeContainer}>
+      <ScrollView styles={styles.welcomeContainer}>
           <Input
               onChangeText={(value) => { this.setState({firstName: value})}}
               value={this.state.firstName}
@@ -219,7 +338,7 @@ export default class SignUpScreen extends React.Component {
               label={"PHONE"}
           />
           <Accordion
-          sections={SECTIONS}
+          sections={this.SECTIONS()}
           activeSections={this.state.activeSections}
           renderSectionTitle={this._renderSectionTitle}
           renderHeader={this._renderHeader}
@@ -227,7 +346,7 @@ export default class SignUpScreen extends React.Component {
           onChange={this._updateSections}
           />
           <Button onPress={(value) => {console.log(value)}} title="Submit" />
-      </View>
+      </ScrollView>
     );
   }
 }
@@ -238,7 +357,7 @@ const styles = StyleSheet.create({
     fontSize: 16
   },
   header: {
-    backgroundColor: '#0048bc',
+    backgroundColor: '#a6aebc',
     padding: 10
   },
   container: {
@@ -326,5 +445,27 @@ const styles = StyleSheet.create({
   helpLinkText: {
     fontSize: 14,
     color: '#2e78b7',
+  },
+});
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 4,
+    color: 'black',
+    paddingRight: 30, // to ensure the text is never behind the icon
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 0.5,
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30, // to ensure the text is never behind the icon
   },
 });

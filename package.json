@@ -52,6 +52,7 @@
     "react-native-elements": "^1.1.0",
     "react-native-geolocation-service": "^2.0.0",
     "react-native-maps": "^0.23.0",
+    "react-native-picker-select": "^6.1.0",
     "react-navigation": "^2.18.2",
     "redux-form": "^8.2.0",
     "sequelize": "^4.42.0",
