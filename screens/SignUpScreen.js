@@ -1,4 +1,5 @@
 import React from 'react';
+import * as yup from 'yup';
 import {
   Image,
   Platform,
@@ -7,17 +8,16 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Button
+  TextInput,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
-import { WebBrowser } from 'expo';
-import t from 'tcomb-form-native';
+import {Button, Label, Input} from 'react-native-elements';
+import { Formik, Field } from 'formik';
 
-import { MonoText } from '../components/StyledText';
-
-const url = 'http://128.237.212.15:4500';
+const url = 'http://128.237.183.228:4500';
 const API = '/api/subjects';
 
-const Form = t.form.Form;
 
 export default class SignUpScreen extends React.Component {
   constructor(props){
@@ -25,10 +25,29 @@ export default class SignUpScreen extends React.Component {
 
     this.state =
     {
-      tutoringSubjects: t.enums({}),
-      deliveryCategories: t.enums({}),
+      tutoringSubjects: [],
+      deliveryCategories: [],
       options: {},
-      value: {}
+      value: {},
+      selectedsubject: '',
+      firstName: '',
+      lastName: '',
+      phone: '',
+      tutoring: {
+        timetotutor: 0,
+      },
+      delivery:
+      {
+        timetodeliver: 0,
+        timetopickup: 0,
+      },
+      tutoringNeeds: {
+        timetogettutored: 0
+      },
+      deliveryNeeds: {
+        timetopickup: 0
+      }
+
     }
 
     this.onChange = this.onChange.bind(this);
@@ -42,6 +61,7 @@ export default class SignUpScreen extends React.Component {
         <Button
           title="Cancel"
           onPress={() => navigation.navigate('Login')}
+          type="clear"
         />
       ),
     };
@@ -79,13 +99,9 @@ export default class SignUpScreen extends React.Component {
               var subjects = old.map((x) => {
                 return x["subject"]
               });
+              subjects.push("Other");
               console.log(subjects);
-              subjects.push("other");
-              subjects = subjects.reduce(function(map, obj) {
-                map[obj] = obj;
-                return map;
-              }, {});
-              this.setState({ [key]: t.enums(subjects) });
+              this.setState({ [key]: subjects });
             }
             else{
               console.log("Categories");
@@ -94,11 +110,7 @@ export default class SignUpScreen extends React.Component {
                 return x["category"]
               });
               subjects.push("other");
-              subjects = subjects.reduce(function(map, obj) {
-                map[obj] = obj;
-                return map;
-              }, {});
-              this.setState({ [key]: t.enums(subjects) });
+              this.setState({ [key]: subjects });
             }
             
         }
@@ -110,119 +122,31 @@ export default class SignUpScreen extends React.Component {
 
   }
 
-  onChange(){
+  onChange(value, field){
     console.log('Changed');
-  
+    console.log(value);
+    console.log(field);
   }
 
   render() {
-    const options = {
-      username :
-      {
-          error: 'Please enter your username.'
-      },
-      password: {
-          error: 'Please enter your password.'
-      }
-    }
-    
-    const Time = t.enums(
-      {
-        5: "5 minutes away",
-        10: "10 minutes away",
-        15: "15 minutes away",
-        20: "20 minutes away",
-        25: "25 minutes away"
-      }
-    )
-
-    const Preference = t.enums(
-      {
-        1: 'Not at all',
-        2: 'Slightly',
-        3: 'Neutral',
-        4: 'Like',
-        5: 'Love'
-      }
-    )
-
-    const Rating = t.enums(
-      {
-        1: 'Novice',
-        2: 'Beginner',
-        3: 'Intermediate',
-        4: 'Skilled',
-        5: 'Expert'
-      }
-    )
-
-    const Subject = t.struct({
-      name: t.String,
-      details: t.String,
-      preference: Preference,
-      skill: Rating
-    })
-
-    const TutoringSkills = t.struct({
-      timetotutor: Time,
-      subjectDropdown: this.state.tutoringSubjects,
-      subjects: t.list(Subject)
-    })
-    
-    const Info = t.struct({
-        firstName: t.String,
-        lastName: t.String,
-        phoneNumber: t.String,
-        andrewId: t.String,
-        password: t.String,
-        tutoringSkills: TutoringSkills
-    });
-  
     return (
-      <ScrollView style={styles.container}>
-            <Form ref={(c) => this._form = c} 
-                type={Info} 
-                options={this.state.options}  
-                value = {this.state.value}
-                onChange = {this.onChange}
-            />
-      </ScrollView>
-      
+      <View styles={styles.welcomeContainer}>
+          <Input
+              onChangeText={(value) => { this.setState({firstName: value})}}
+              value={this.state.firstName}
+              label={"FIRST NAME"}
+              errorMessage={"First name is required"}
+          />
+           <Input
+              onChangeText={(value) => { this.setState({firstName: value})}}
+              value={this.state.lastName}
+              label={"LAST NAME"}
+              errorMessage={"Last name is required"}
+          />
+          <Button onPress={(value) => {console.log(value)}} title="Submit" />
+      </View>
     );
   }
-
-  _maybeRenderDevelopmentModeWarning() {
-    if (__DEV__) {
-      const learnMoreButton = (
-        <Text onPress={this._handleLearnMorePress} style={styles.helpLinkText}>
-          Learn more
-        </Text>
-      );
-
-      return (
-        <Text style={styles.developmentModeText}>
-          Development mode is enabled, your app will be slower but you can use useful development
-          tools. {learnMoreButton}
-        </Text>
-      );
-    } else {
-      return (
-        <Text style={styles.developmentModeText}>
-          You are not in development mode, your app will run at full speed.
-        </Text>
-      );
-    }
-  }
-
-  _handleLearnMorePress = () => {
-    WebBrowser.openBrowserAsync('https://docs.expo.io/versions/latest/guides/development-mode');
-  };
-
-  _handleHelpPress = () => {
-    WebBrowser.openBrowserAsync(
-      'https://docs.expo.io/versions/latest/guides/up-and-running.html#can-t-see-your-changes'
-    );
-  };
 }
 
 const styles = StyleSheet.create({
