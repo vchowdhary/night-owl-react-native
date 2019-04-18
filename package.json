@@ -48,6 +48,7 @@
     "react-hot-loader": "^4.8.4",
     "react-native": "https://github.com/expo/react-native/archive/sdk-31.0.0.tar.gz",
     "react-native-background-geolocation": "^3.0.1",
+    "react-native-collapsible": "^1.4.0",
     "react-native-elements": "^1.1.0",
     "react-native-geolocation-service": "^2.0.0",
     "react-native-maps": "^0.23.0",

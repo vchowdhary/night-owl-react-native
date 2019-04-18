@@ -5,17 +5,18 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
   TextInput,
   ActivityIndicator,
-  Alert
+  Alert,
+  Picker
 } from 'react-native';
-import {Button, Label, Input} from 'react-native-elements';
-import { Formik, Field } from 'formik';
+import {Button, Label, Input, Text} from 'react-native-elements';
+import  Accordion from 'react-native-collapsible/Accordion';
 
-const url = 'http://128.237.183.228:4500';
+
+const url = 'http://128.237.135.97:4500';
 const API = '/api/subjects';
 
 
@@ -46,12 +47,18 @@ export default class SignUpScreen extends React.Component {
       },
       deliveryNeeds: {
         timetopickup: 0
-      }
+      },
+      activeSections: []
 
     }
 
     this.onChange = this.onChange.bind(this);
+    this.renderTutoringSubjects = this.renderTutoringSubjects.bind(this);
     this._form = null;
+    this._renderContent = this._renderContent.bind(this);
+    this._renderHeader = this._renderHeader.bind(this);
+    this._renderSectionTitle = this._renderSectionTitle.bind(this);
+    this._updateSections = this._updateSections.bind(this);
     
   }
   static navigationOptions = ({ navigation }) => {
@@ -122,26 +129,102 @@ export default class SignUpScreen extends React.Component {
 
   }
 
+  renderTutoringSubjects(){
+    return (<Picker
+      selectedValue={this.state.selectedsubject}
+      enabled={true}
+      onValueChange={(itemValue, itemIndex) =>
+        this.setState({selectedsubject: itemValue})
+      }>
+        {
+          (this.state.tutoringSubjects).map((x) => {
+            return (<Picker.Item label={x} value={x}/>);
+          })
+        }
+    </Picker>);
+  }
+
   onChange(value, field){
     console.log('Changed');
     console.log(value);
     console.log(field);
   }
+    _renderSectionTitle = section => {
+      return null;
+    };
+  
+    _renderHeader = section => {
+      return (
+        <View style={styles.header}>
+          <Text style={styles.headerText}>{section.title}</Text>
+        </View>
+      );
+    };
+  
+    _renderContent = section => {
+      return (
+        <View style={styles.content}>
+          {section.content}
+        </View>
+      );
+    };
+  
+    _updateSections = activeSections => {
+      this.setState({ activeSections });
+    };
 
   render() {
+    const SECTIONS = [
+      {
+        title: 'TUTORING SKILLS',
+        content: <View>
+          <Text h5>Please describe your tutoring skills. </Text>
+              {this.renderTutoringSubjects()}
+              <Input
+                  onChangeText={(value) => { this.setState({newTutoringSubject: value})}}
+                  value={this.state.newTutoringSubject}
+            label={"NEW SUBJECT"}
+            editable={this.state.selectedsubject === "Other"}
+        />
+        </View>,
+      },
+      {
+        title: 'DELIVERY SKILLS',
+        content: <Text h5>''</Text>,
+      },
+      {
+        title: 'TUTORING NEEDS',
+        content: <Text h5>''</Text>,
+      },
+      {
+        title: 'DELIVERY NEEDS',
+        content: <Text h5>''</Text>,
+      }
+    ];
     return (
       <View styles={styles.welcomeContainer}>
           <Input
               onChangeText={(value) => { this.setState({firstName: value})}}
               value={this.state.firstName}
               label={"FIRST NAME"}
-              errorMessage={"First name is required"}
           />
            <Input
-              onChangeText={(value) => { this.setState({firstName: value})}}
+              onChangeText={(value) => { this.setState({lastName: value})}}
               value={this.state.lastName}
               label={"LAST NAME"}
-              errorMessage={"Last name is required"}
+          />
+          <Input
+              onChangeText={(value) => { this.setState({phone: value})}}
+              value={this.state.phone}
+              label={"PHONE"}
+          />
+          <Accordion
+          sections={SECTIONS}
+          activeSections={this.state.activeSections}
+          renderSectionTitle={this._renderSectionTitle}
+          renderHeader={this._renderHeader}
+          renderContent={this._renderContent}
+          onChange={this._updateSections}
           />
           <Button onPress={(value) => {console.log(value)}} title="Submit" />
       </View>
@@ -150,6 +233,14 @@ export default class SignUpScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
+  headerText: {
+    color: '#fff',
+    fontSize: 16
+  },
+  header: {
+    backgroundColor: '#0048bc',
+    padding: 10
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
