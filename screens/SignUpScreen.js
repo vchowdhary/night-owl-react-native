@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  TouchableHighlight,
   View,
   TextInput,
   ActivityIndicator,
@@ -17,7 +18,8 @@ import {
 import {Button, Label, Input, Text, Slider} from 'react-native-elements';
 import  Accordion from 'react-native-collapsible/Accordion';
 import RNPickerSelect from 'react-native-picker-select';
-import Subject from './Subject';
+import Swipeable from 'react-native-swipeable-row';
+import { bold } from 'ansi-colors';
 
 
 const url = 'http://128.237.113.186:4500';
@@ -68,6 +70,12 @@ export default class SignUpScreen extends React.Component {
     this.Subject = this.Subject.bind(this);
     this.addTutoringSubject = this.addTutoringSubject.bind(this);
     this.pushToDatabase = this.pushToDatabase.bind(this);
+    this.removeFromTutoring = this.removeFromTutoring.bind(this);
+    this.onTutoringChange = this.onTutoringChange.bind(this);
+    this.onDeliveryChange = this.onDeliveryChange.bind(this);
+    this.onTutoringNeedsChange = this.onTutoringNeedsChange.bind(this);
+    this.onDeliveryNeedsChange = this.onDeliveryNeedsChange.bind(this);
+    this.onChange = this.onChange.bind(this);
     
   }
   static navigationOptions = ({ navigation }) => {
@@ -167,31 +175,105 @@ export default class SignUpScreen extends React.Component {
     );
   }
 
+   /**
+     * Handles tutoring form change
+     * 
+     * @param {string} name - the input name
+     * @param {string} value - the description
+     */
+    onTutoringChange(name, value) {
+      if(name.includes('/'))
+      {
+          var split = name.split('/');
+          this.state.tutoring[[split[0]]][[split[1]]] = value;
+          this.onChange('tutoring', this.state.tutoring);
+      }
+      else{
+          this.state.tutoring[[name]] = value;
+          this.onChange('tutoring', this.state.tutoring);
+      }
+      
+  }
+
+  /**
+   * Handles tutoring form change
+   * 
+   * @param {string} name - the input name
+   * @param {string} value - the description
+   */
+  onTutoringNeedsChange(name, value) {
+      if(name.includes('/')){
+          var split = name.split('/');
+          this.state.tutoringNeeds[[split[0]]][[split[1]]] = value;
+          this.onChange('tutoringNeeds', this.state.tutoringNeeds);
+      }
+      else{
+          this.state.tutoringNeeds[[name]] = value;
+          this.onChange('tutoringNeeds', this.state.tutoringNeeds);
+      }
+      
+  }
+
+  /**
+   * Handles delivery form change
+   * 
+   * @param {string} name - the input name
+   * @param {string} value - the description
+   */
+  onDeliveryNeedsChange(name, value) {
+      // eslint-disable-next-line react/no-direct-mutation-state
+      if (name.includes('/')){
+          var split = name.split('/');
+          this.state.deliveryNeeds[[split[0]]][[split[1]]] = value;
+          this.onChange('deliveryNeeds', this.state.deliveryNeeds);
+      }
+      else{
+          this.state.deliveryNeeds[[name]] = value;
+          this.onChange('deliveryNeeds', this.state.deliveryNeeds);
+      }
+  }
+
+  /**
+   * Handles delivery form change
+   * 
+   * @param {string} name - the input name
+   * @param {string} value - the description
+   */
+  onDeliveryChange(name, value) {
+      if(name.includes('/')){
+          var split = name.split('/');
+          this.state.delivery[[split[0]]][[split[1]]] = value;
+          this.onChange('delivery', this.state.delivery);
+      }
+      else{
+          this.state.delivery[[name]] = value;
+          this.onChange('delivery', this.state.delivery);
+      }
+      
+  }
+
+  onChange(key, value) {
+    this.setState({ [key]: value });
+    //console.log(this.state);
+}
+
   Subject(props){
     console.log("Creating Subject");
     
     const { name } = props;
-    console.log(props);
+    console.log(name);
+    console.log("Init value");
     console.log(this.state.tutoring[[name]]);
+    var rvalue = this.state.tutoring[[name]] === undefined ? 1 : this.state.tutoring[[name]]["rating"];
+    console.log(rvalue);
     return (
       <View>
-        <Text h4>{(props.name).toUpperCase()}</Text>
-        <Text h5>Rate your skill from 1 to 5, with 1 being beginner and 5 being expert</Text>
-        <Text style={{
-                width: 50,
-                textAlign: 'center',
-                }}
-            >{Math.floor( this.state.tutoring[[name]]["rating"] )}</Text>
-        <Slider
-          value={this.state.tutoring[[name]]["rating"] !== undefined ? this.state.tutoring[[name]]["rating"] : 0}
-          onValueChange={value => {
-            var x = this.state.tutoring[[name]];
-            x.rating = value;
-            this.setState({tutoring: this.state.tutoring});
-          }}
-          step={1}
-          minimumValue={1}
-          maximumValue={5}
+        <Text h5>{(props.name).toUpperCase()}</Text>
+        <Input
+          onChangeText={(value) => { 
+            this.onTutoringChange(name+'/rating', parseInt(value))}}
+          value={1}
+          label={"RATE YOUR SKILL FROM 1 (BEGINNER) to 5 (EXPERT)"}
         />
       </View>);
   }
@@ -228,15 +310,19 @@ export default class SignUpScreen extends React.Component {
     console.log("pressed");
     var x = this.state.tutoringRows;
     var subject = this.state.selectedsubject === "Other" ? this.state.newTutoringSubject : this.state.selectedsubject;
-    x.push(subject);
-    this.setState({tutoringRows: x});
-    this.state.tutoring[subject] = {rating: 0, details: '', preference: 0};
-    this.setState({tutoring: this.state.tutoring});
-    console.log(this.state);
+    this.state.tutoringRows.push({label: subject, value: subject});
+    this.state.tutoring[[subject]] = {rating: 1, details: '', preference: 1};
+    
     if (this.state.selectedsubject == "Other"){
       this.pushToDatabase(this.state.newTutoringSubject, 'tutoring');
-      this.state.tutoringSubjects.push(this.state.newTutoringSubject);
+      this.state.tutoringSubjects.push({label: this.state.newTutoringSubject, 
+                                        value: this.state.newTutoringSubject});
+      this.state.tutoring[[this.state.newTutoringSubject]] = {rating: 1, details: '', preference: 1};
     }
+
+    this.setState({tutoring: this.state.tutoring});
+    this.setState({tutoringSubjects: this.state.tutoringSubjects});
+    console.log(this.state);
 
   }
 
@@ -269,6 +355,14 @@ export default class SignUpScreen extends React.Component {
       this.setState({ activeSections });
     };
 
+  removeFromTutoring(subjectname, index)
+  {
+    delete this.state.tutoring[[subjectname]];
+    this.state.tutoringRows.splice(index, 1);
+    this.setState({tutoring: this.state.tutoring, tutoringRows: this.state.tutoringRows});
+    console.log(this.state);
+  }
+
   SECTIONS(){
     const dimensions = Dimensions.get('window');
     const screenWidth = dimensions.width;
@@ -293,10 +387,19 @@ export default class SignUpScreen extends React.Component {
                   }}
                   renderItem={({ item, index }) => 
                   {
+                    const rightButtons = [
+                      <TouchableHighlight 
+                      style = {{backgroundColor: '#e20000', flex: 1,  alignContent: 'center'}}
+                      onPress={({idex}) => this.removeFromTutoring(item.label, index)}><Text style={{
+                        color: '#fff'
+                      }}>DELETE</Text></TouchableHighlight>,
+                    ];
                     console.log("Rendering");
                     console.log(item);
                     console.log(index);
-                    return (<this.Subject name={item}/>);}
+                    return (<Swipeable rightButtons={rightButtons}>
+                              <this.Subject name={item.label}/>
+                            </Swipeable>);}
                 }
             />
           </ScrollView>
