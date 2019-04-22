@@ -14,7 +14,8 @@ import {
   Alert,
   Picker,
   FlatList,
-  Dimensions
+  Dimensions,
+  AsyncStorage,
 } from 'react-native';
 import {Button, Label, Input, Text, Slider} from 'react-native-elements';
 import  Accordion from 'react-native-collapsible/Accordion';
@@ -27,7 +28,7 @@ const url = 'http://128.237.136.103:4500';
 const API = '/api/subjects';
 
 
-export default class SignUpScreen extends React.Component {
+export default class ProfileScreen extends React.Component {
   constructor(props){
     super(props);
 
@@ -66,7 +67,11 @@ export default class SignUpScreen extends React.Component {
       newTutoringSubject: '',
       newDeliveryCategory: '',
       newTutoringSubjectNeed: '',
-      newDeliveryCategoryNeed: ''
+      newDeliveryCategoryNeed: '',
+      disabled: true,
+      loading: true,
+      error: null,
+      profile: {tutoring: {}, delivery: {}, deliveryNeeds: {}, tutoringNeeds: {}, bio: ''},
     }
 
     this.onChange = this.onChange.bind(this);
@@ -89,6 +94,9 @@ export default class SignUpScreen extends React.Component {
     this.Category = this.Category.bind(this);
     this.onAccountSubmit = this.onAccountSubmit.bind(this);
     this.signup = this.signup.bind(this);
+    this.refreshProfile = this.refreshProfile.bind(this);
+    this.updateRows = this.updateRows.bind(this);
+    this.onEditClick = this.onEditClick.bind(this);
     
   }
   static navigationOptions = ({ navigation }) => {
@@ -105,13 +113,126 @@ export default class SignUpScreen extends React.Component {
   }
 
   /**
-     * runs when component will mount
+     * Edit button clicked
      */
-    async componentWillMount() {
-      this.renderDropdown('tutoringSubjects');
-      console.log('Getting delivery categories');
-      this.renderDropdown('deliveryCategories');
+    async onEditClick(){
+      if(!this.state.disabled){
+          this.state.profile.tutoring = this.state.tutoring;
+          this.state.profile.delivery = this.state.delivery;
+          this.state.profile.deliveryNeeds = this.state.deliveryNeeds;
+          this.state.profile.tutoringNeeds = this.state.tutoringNeeds;
+          this.state.profile.bio = this.state.bio;
+
+          console.log('Updating profile...');
+          console.log(this.state.id);
+          await User.update(this.state.id, this.state.profile);
+      }
+      this.setState({ disabled: !this.state.disabled });
+      
   }
+
+  async refreshProfile() {
+    console.log('Refreshing profile');
+    const id = await AsyncStorage.getItem("userToken");
+    console.log(id);
+    const reqURL = url + `/api/users/${encodeURIComponent(id)}`;
+
+    this.setState({ loading: true, id: id });
+
+    try {
+        await fetch(reqURL, {
+            method: 'GET'
+        })
+        .then(res => {
+          console.log(res.status)
+          //console.log(res._bodyText);
+          if (res.status === 200){
+              console.log('Success!!');
+              console.log(res._bodyText);
+              var profile = JSON.parse(res._bodyText);
+              console.log(profile);
+              this.setState({ profile: profile });
+              this.setState({ 
+                  id: id,
+                  tutoring: profile.tutoring, 
+                  tutoringNeeds: profile.tutoringNeeds, 
+                  delivery: profile.delivery,
+                  deliveryNeeds: profile.deliveryNeeds,
+                  bio: profile.bio
+            });
+            console.log(this.state);
+            this.updateRows();
+        }})
+        .catch((error) => {
+            console.log(error);
+            return error;
+        });      
+
+      
+        
+        
+
+    } catch (error) {
+        this.setState({ error });
+    } finally {
+        this.setState({ loading: false });
+    }
+}
+
+updateRows(){
+  console.log('Updating rows');
+  for (var key in this.state.tutoring){
+      console.log(key);
+      if(key !== 'timetotutor'){
+          this.state.tutoringRows.push({ label: key });
+      }
+  }
+
+  for (var key2 in this.state.tutoringNeeds){
+      console.log(key2);
+      if(key2 !== 'timetogettutored'){
+          this.state.tutoringRowsNeed.push({ label: key2 });
+      }
+  }
+  
+  for (var key3 in this.state.delivery){
+      console.log(key3);
+      if(key3 !== 'timetodeliver' && key3 !== 'timetopickup'){
+          this.state.deliveryRows.push({ label: key3 });
+      }
+  }
+
+  for (var key4 in this.state.deliveryNeeds){
+      console.log(key4);
+      if(key4 !== 'timetopickup'){
+          this.state.deliveryRowsNeed.push({ label: key4 });
+      }
+  }
+  console.log(this.state);
+}
+
+/**
+ * React lifecycle handler called when component has mounted.
+ */
+async componentDidMount() {
+  if (!this.state.loading) {
+      return;
+  }
+
+  this.refreshProfile();
+  
+  //await this.refreshMatchIDs();
+}
+
+/**
+ * runs when component will mount
+ */
+async componentWillMount() {
+  this.renderDropdown('tutoringSubjects');
+  console.log('Getting delivery categories');
+  this.renderDropdown('deliveryCategories');
+ 
+}
 
   /**
   * Fetches options from database
@@ -138,7 +259,7 @@ export default class SignUpScreen extends React.Component {
                 return {label: x["subject"], value: x["subject"]}
               });
               subjects.push({label: "Other", value: "Other"});
-              console.log(subjects);
+              //console.log(subjects);
               this.setState({ [key]: subjects });
             }
             else{
@@ -170,7 +291,7 @@ export default class SignUpScreen extends React.Component {
     selection = need ? selection + "need" : selection;
 
     var items = service==="tutoring" ? 'tutoringSubjects' : 'deliveryCategories';
-    console.log(this.state[[items]])
+    //console.log(this.state[[items]])
 
     return (
       <RNPickerSelect
@@ -314,10 +435,10 @@ export default class SignUpScreen extends React.Component {
             <Text style={styles.labelText}>Please rate your skill in this subject</Text>
             <RNPickerSelect
               placeholder={{
-                label: 'Select a rating...',
-                value: null,
+                value: (this.state.tutoring[[name]['rating']]),
                 color: '#9EA0A4',
               }}
+              disabled={this.state.disabled}
               items={ratings}
               onValueChange={value => {
                 this.onTutoringChange(name+'/rating', value)
@@ -336,9 +457,10 @@ export default class SignUpScreen extends React.Component {
         }
         <Text style={styles.labelText}>{!need ? 'Please rate how much you like teaching this subject.' : 'Please rate how much you need tutoring in this subject.'}</Text>
         <RNPickerSelect
+            disabled={this.state.disabled}
             placeholder={{
-              label: 'Select a rating...',
-              value: null,
+              value: (need ? this.state.tutoringNeeds[[name]]['preference'] :
+              this.state.tutoring[[name]]['preference']),
               color: '#9EA0A4',
             }}
             items={need ? needs : preferences}
@@ -355,7 +477,9 @@ export default class SignUpScreen extends React.Component {
             }}
           />
         <Input
+          editable={this.state.disabled}
           style={styles.input}
+          value={need ? this.state.tutoringNeeds[[name]]['details'] : this.state.tutoring[[name]]['details']}
           onChangeText={(value) => { 
             need ? this.onTutoringNeedsChange(name+'/details', value) : this.onTutoringChange(name+'/details', value)}}
           label={"ADDITIONAL DETAILS"}
@@ -381,8 +505,9 @@ export default class SignUpScreen extends React.Component {
         <Text style={styles.biglabelText}>{(props.name).toUpperCase()}</Text>
         <Text style={styles.labelText}>{need ? 'Please rate how much you would like to have this item delivered to you.' : 'Please rate how much you would like to deliver this item.'}</Text>
         <RNPickerSelect
+            disabled={this.state.disabled}
             placeholder={{
-              value: null,
+              value: (need ? this.state.deliveryNeeds[[name]]['preference'] : this.state.delivery[[name]]['preference']),
               color: '#9EA0A4',
             }}
             items={preferences}
@@ -399,7 +524,9 @@ export default class SignUpScreen extends React.Component {
             }}
           />
            <Input
+              editable={this.state.disabled}
               style={styles.input}
+              value={need ? this.state.deliveryNeeds[[name]]['details'] : this.state.delivery[[name]]['details']}
               onChangeText={(value) => { 
                 need ? this.onDeliveryNeedsChange(name+'/details', value) : this.onDeliveryChange(name+'/details', value)}}
               label={"ADDITIONAL DETAILS"}/>
@@ -529,12 +656,13 @@ export default class SignUpScreen extends React.Component {
           <Text style={styles.labelText}>How far are away are you willing to go to tutor someone?</Text>
           <RNPickerSelect
             placeholder={{
-              label: 'Select a time...',
-              value: null,
+              label: this.state.tutoring['timetotutor'] + " minutes",
+              value: this.state.tutoring['timetotutor'],
               color: '#9EA0A4',
             }}
             items={times}
-            onValueChange={value => {
+            disabled={this.state.disabled}
+            onValueChange={(value) => {
               this.onTutoringChange('timetotutor', value)
             }}
             style={{
@@ -553,9 +681,9 @@ export default class SignUpScreen extends React.Component {
             onChangeText={(value) => { this.setState({newTutoringSubject: value})}}
             value={this.state.newTutoringSubject}
             label={"NEW SUBJECT"}
-            editable={this.state.selectedsubject === "Other"}
+            editable={!this.state.disabled && this.state.selectedsubject === "Other"}
           />
-          <Button onPress={() => { this.addItem("tutoring", false) }} title="Add Subject" />
+          <Button disabled={this.state.disabled} onPress={() => { this.addItem("tutoring", false) }} title="Add Subject" />
           <ScrollView>
             <FlatList
                   data={this.state.tutoringRows}
@@ -567,6 +695,7 @@ export default class SignUpScreen extends React.Component {
                     const rightButtons = [
                       <TouchableHighlight 
                       style = {{backgroundColor: '#e20000', flex: 1,  alignItems: 'center'}}
+                      disabled={this.state.disabled}
                       onPress={({idex}) => this.removeFromService(item.label, index, "tutoring", false)}><Text style={{
                         color: '#fff',
                         fontFamily: 'Arial',
@@ -579,7 +708,7 @@ export default class SignUpScreen extends React.Component {
                     console.log("Rendering");
                     console.log(item);
                     console.log(index);
-                    return (<Swipeable rightButtons={rightButtons}>
+                    return (<Swipeable rightButtons={rightButtons} disabled={this.state.disabled}>
                               <this.Subject name={item.label} need={false}/>
                             </Swipeable>);}
                 }
@@ -593,9 +722,10 @@ export default class SignUpScreen extends React.Component {
         <Text style={styles.biglabelText}>Please describe what you are willing to deliver. </Text>
         <Text style={styles.labelText}>How far are away are you willing to go to deliver something?</Text>
         <RNPickerSelect
+          disabled={this.state.disabled}
           placeholder={{
-            label: 'Select a time...',
-            value: null,
+            label: this.state.delivery['timetodeliver'] + 'minutes',
+            value: this.state.delivery['timetodeliver'],
             color: '#9EA0A4',
           }}
           items={times}
@@ -613,9 +743,10 @@ export default class SignUpScreen extends React.Component {
         />
         <Text style={styles.labelText}>How far are away are you willing to go to pick up items that need to be delivered?</Text>
         <RNPickerSelect
+          disabled={this.state.disabled}
           placeholder={{
-            label: 'Select a time...',
-            value: null,
+            label: this.state.delivery['timetopickup'] + ' minutes',
+            value: this.state.delivery['timetopickup'],
             color: '#9EA0A4',
           }}
           items={times}
@@ -638,9 +769,9 @@ export default class SignUpScreen extends React.Component {
           onChangeText={(value) => { this.setState({newDeliveryCategory: value})}}
           value={this.state.newDeliveryCategory}
           label={"NEW CATEGORY"}
-          editable={this.state.selectedcategory === "Other"}
+          editable={this.state.selectedcategory === "Other" && !this.state.disabled}
         />
-        <Button onPress={() => { this.addItem("delivery", false)}} title="Add Category" />
+        <Button disabled={this.state.disabled} onPress={() => { this.addItem("delivery", false)}} title="Add Category" />
         <ScrollView>
           <FlatList
                 data={this.state.deliveryRows}
@@ -651,6 +782,7 @@ export default class SignUpScreen extends React.Component {
                 {
                   const rightButtons = [
                     <TouchableHighlight 
+                    disabled={this.state.disabled}
                     style = {{backgroundColor: '#e20000', flex: 1,  alignItems: 'center'}}
                     onPress={({idex}) => this.removeFromService(item.label, index, "delivery", false)}><Text style={{
                       color: '#fff',
@@ -664,7 +796,7 @@ export default class SignUpScreen extends React.Component {
                   console.log("Rendering");
                   console.log(item);
                   console.log(index);
-                  return (<Swipeable rightButtons={rightButtons}>
+                  return (<Swipeable rightButtons={rightButtons} disable={this.state.disabled}>
                             <this.Category name={item.label} need={false}/>
                           </Swipeable>);}
               }
@@ -679,8 +811,8 @@ export default class SignUpScreen extends React.Component {
         <Text style={styles.labelText}>How far are away are you willing to go to get tutored?</Text>
         <RNPickerSelect
           placeholder={{
-            label: 'Select a time...',
-            value: null,
+            label: this.state.tutoringNeeds['timetogettutored'] + ' minutes',
+            value: this.state.tutoringNeeds['timetogettutored'],
             color: '#9EA0A4',
           }}
           items={times}
@@ -744,8 +876,8 @@ export default class SignUpScreen extends React.Component {
         <Text style={styles.labelText}>How far are away are you willing to go to pick up items you need delivered?</Text>
         <RNPickerSelect
           placeholder={{
-            label: 'Select a time...',
-            value: null,
+            label: this.state.deliveryNeeds['timetopickup'] + ' minutes',
+            value: this.state.deliveryNeeds['timetopickup'],
             color: '#9EA0A4',
           }}
           items={times}
@@ -835,24 +967,7 @@ export default class SignUpScreen extends React.Component {
     return (
       <ScrollView styles={styles.welcomeContainer}>
         <View style={styles.input}>
-          <Input
-              style={styles.input}
-              onChangeText={(value) => { this.setState({nameFirst: value})}}
-              value={this.state.nameFirst}
-              label={"FIRST NAME"}
-          />
-           <Input
-              style={styles.input}
-              onChangeText={(value) => { this.setState({nameLast: value})}}
-              value={this.state.nameLast}
-              label={"LAST NAME"}
-          />
-          <Input
-              style={styles.input}
-              onChangeText={(value) => { this.setState({phone: value})}}
-              value={this.state.phone}
-              label={"PHONE"}
-          />
+          <Text styles={styles.biglabelText} h2>{this.state.profile.nameFirst + ' ' + this.state.profile.nameLast}</Text>
         </View>
         <View style={styles.input}>
           <Accordion
@@ -868,24 +983,11 @@ export default class SignUpScreen extends React.Component {
               onChangeText={(value) => { this.setState({bio: value})}}
               value={this.state.bio}
               multiline={true}
+              editable={this.state.disabled}
               label={"ANYTHING ELSE YOU'D LIKE TO ADD?"}
           />
-          <Input
-              style={styles.input}
-              onChangeText={(value) => { this.setState({id: value})}}
-              value={this.state.id}
-              autoCapitalize={"none"}
-              label={"ANDREW ID"}
-          />
-          <Input
-              style={styles.input}
-              onChangeText={(value) => { this.setState({password: value})}}
-              value={this.state.password}
-              secureTextEntry={true}
-              label={"PASSWORD"}
-          />
         </View>  
-        <Button onPress={this.onAccountSubmit} title="Submit" />
+        <Button onPress={this.onEditClick} title={this.state.disabled ? 'Edit Profile' : 'Save Changes' } />
       </ScrollView>
     );
   }

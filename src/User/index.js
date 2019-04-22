@@ -17,7 +17,7 @@ import Map from '../Map';
  */
 const API = '/api/users/';
 const API2 = '/api/tokens/';
-const url = 'http://128.237.177.153:4500';
+const url = 'http://128.237.136.103:4500';
 
 //'http://128.237.220.65:4500'
 
@@ -323,20 +323,23 @@ class User {
         console.log(id);
         console.log(profile);
         
-        const { status, response } = await XHRpromise('PUT', reqURL, {
-            contentType: 'application/json',
-            body: JSON.stringify({ profile, update: true })
+        await fetch(reqURL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ profile, update: true }),
+        })
+        .then(res => {
+            console.log(res.status)
+            if (res.status === 201 || res.status === 200){
+                console.log('Success!!');
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+            return error;
         });
-
-        switch (status) {
-            case 200:
-            case 201:
-                break;
-            case 400:
-                throw new Error(response);
-            default:
-                throw new Error('Unknown error occurred.');
-        }
 
         this._id = id;
         return this;

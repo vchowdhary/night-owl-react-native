@@ -7,6 +7,7 @@ import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 import User from '../src/User';
 
@@ -19,6 +20,23 @@ const HomeStack = createStackNavigator({
       headerMode: 'screen',
       headerTitle: 'Home',
       drawerLabel: 'Home',
+      headerLeft: <Button onPress={() => {
+        console.log('pressed');
+        //console.log(navigation);
+        navigation.toggleDrawer()}
+       } title= "="/>
+    }),
+  }
+});
+
+const ProfileStack = createStackNavigator({
+  Profile: {
+    screen: ProfileScreen,
+    navigationOptions: ({ navigation }) => ({
+      initialRouteName: 'Profile',
+      headerMode: 'screen',
+      headerTitle: 'Profile',
+      drawerLabel: 'Profile',
       headerLeft: <Button onPress={() => {
         console.log('pressed');
         //console.log(navigation);
@@ -75,6 +93,9 @@ const MyDrawerNavigator = createDrawerNavigator({
     },
     Settings: {
       screen: SettingsStack
+    },
+    Profile: {
+      screen: ProfileStack,
     }
   },
   {

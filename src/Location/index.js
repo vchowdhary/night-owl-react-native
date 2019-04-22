@@ -8,7 +8,7 @@ import Geolocation  from 'react-native-geolocation-service';
  * @type {string}
  */
 const API = '/api/locationtracking/';
-const url = 'http://128.237.212.15:4500';
+const url = 'http://128.237.136.103:4500';
 
 /**
  * Handles all location tracking
