@@ -18,10 +18,15 @@ import {
   } from 'react-native';
   import {Button, Label, Input, Text, Slider} from 'react-native-elements';
 import RNPickerSelect from 'react-native-picker-select';
+import MapView from 'react-native-maps';
 
 import { MonoText } from '../components/StyledText';
 import Geolocation from '../src/Location';
-const url = 'http://128.237.185.200:4500';
+
+import config from '../config';
+
+console.log(config);
+const url = config.url;
 const API3 = '/api/subjects';
 const API2 = '/api/history/';
 const API = '/api/match/';
@@ -331,6 +336,7 @@ renderDropdownService(service){
             if(res.status == 200 || res.status == 201 || res.status == 204){
                 console.log('SUCCESS GETTING MATCHES');
                 console.log(res._bodyText);
+            
             }
         })        
     }
@@ -429,7 +435,7 @@ renderDropdownService(service){
     ]
     return (
       <View style={styles.container}>
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <ScrollView style={styles.container}>
         <Text style={styles.labelText}>What type of request are you making?</Text>
         <RNPickerSelect
               placeholder={{
@@ -464,7 +470,19 @@ renderDropdownService(service){
               onChangeText={(value) => { this.requestChange('details', value)}}
               label={"ADDITIONAL DETAILS"}/>
            <Text h4>{this.state.request.type === 'delivery' ? 'Please select where you are picking up items from (blue marker) and where you will deliver them (red marker)' : 'Please select where you will be tutoring.'}</Text>
+           <MapView
+                style={styles.map}
+                region={{
+                latitude: this.state.currentLatLng.lat,
+                longitude: this.state.currentLatLng.lng,
+                latitudeDelta: 0.02,
+                longitudeDelta: 0.02
+                }}
+                showsUserLocation={true}
+            />
+
            <Button onPress={this.matchRequest} title={"Submit"} />
+           
         </ScrollView>
       </View>
     );
@@ -608,6 +626,10 @@ const styles = StyleSheet.create({
   helpLinkText: {
     fontSize: 14,
     color: '#2e78b7',
+  },
+  map: {
+   height: 500,
+   width: Dimensions.screenWidth
   },
 });
 

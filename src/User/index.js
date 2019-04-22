@@ -17,7 +17,11 @@ import Map from '../Map';
  */
 const API = '/api/users/';
 const API2 = '/api/tokens/';
-const url = 'http://128.237.185.200:4500';
+import config from '../../config';
+
+
+console.log(config);
+const url = config.url;
 
 //'http://128.237.220.65:4500'
 

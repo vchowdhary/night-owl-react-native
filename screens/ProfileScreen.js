@@ -23,8 +23,10 @@ import RNPickerSelect from 'react-native-picker-select';
 import Swipeable from 'react-native-swipeable-row';
 import { bold } from 'ansi-colors';
 
+import config from '../config';
 
-const url = 'http://128.237.185.200:4500';
+const url = config.url;
+console.log(url);
 const API = '/api/subjects';
 
 
