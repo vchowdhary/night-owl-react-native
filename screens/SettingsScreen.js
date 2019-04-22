@@ -7,8 +7,6 @@ export default class SettingsScreen extends React.Component {
   async componentDidMount(){
     const id = await AsyncStorage.getItem("userToken");
     console.log(id);
-    var location = new Geolocation();
-    location.enableLocationPermission(id);
   }
   static navigationOptions = function (props){
     return {

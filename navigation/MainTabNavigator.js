@@ -10,6 +10,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 import User from '../src/User';
+import MatchRequestScreen from '../screens/MatchRequestScreen';
 
 
 const HomeStack = createStackNavigator({
@@ -37,6 +38,23 @@ const ProfileStack = createStackNavigator({
       headerMode: 'screen',
       headerTitle: 'Profile',
       drawerLabel: 'Profile',
+      headerLeft: <Button onPress={() => {
+        console.log('pressed');
+        //console.log(navigation);
+        navigation.toggleDrawer()}
+       } title= "="/>
+    }),
+  }
+});
+
+const MatchRequestStack = createStackNavigator({
+  Request: {
+    screen: MatchRequestScreen,
+    navigationOptions: ({ navigation }) => ({
+      initialRouteName: 'Make a Request',
+      headerMode: 'screen',
+      headerTitle: 'Make a Request',
+      drawerLabel: 'Make a Request',
       headerLeft: <Button onPress={() => {
         console.log('pressed');
         //console.log(navigation);
@@ -96,7 +114,10 @@ const MyDrawerNavigator = createDrawerNavigator({
     },
     Profile: {
       screen: ProfileStack,
-    }
+    },
+    Request: {
+      screen: MatchRequestStack,
+    },
   },
   {
     contentComponent:(props) => (

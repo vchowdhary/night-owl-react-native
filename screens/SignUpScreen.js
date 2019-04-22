@@ -23,7 +23,7 @@ import Swipeable from 'react-native-swipeable-row';
 import { bold } from 'ansi-colors';
 
 
-const url = 'http://128.237.136.103:4500';
+const url = 'http://128.237.185.200:4500';
 const API = '/api/subjects';
 
 

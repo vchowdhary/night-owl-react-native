@@ -1,5 +1,7 @@
 import XHRpromise from '../XHRpromise';
 import Geolocation  from 'react-native-geolocation-service';
+import {AsyncStorage} from 'react-native';
+
 /**
  * API base path.
  *
@@ -8,7 +10,7 @@ import Geolocation  from 'react-native-geolocation-service';
  * @type {string}
  */
 const API = '/api/locationtracking/';
-const url = 'http://128.237.136.103:4500';
+const url = 'http://128.237.185.200:4500';
 
 /**
  * Handles all location tracking
@@ -45,6 +47,7 @@ class Location{
 
         var latitude = position.coords.latitude;
         var longitude = position.coords.longitude;
+
         this._latitude = position.coords.latitude;
         this._longitude = position.coords.longitude;
 
