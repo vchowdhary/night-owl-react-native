@@ -23,7 +23,10 @@ import Swipeable from 'react-native-swipeable-row';
 import { bold } from 'ansi-colors';
 
 
-const url = 'http://128.237.185.200:4500';
+import config from '../config';
+
+console.log(config);
+const url = config.url;
 const API = '/api/subjects';
 
 
@@ -452,12 +455,13 @@ export default class SignUpScreen extends React.Component {
 
     dataRows.push({label: subject, value: subject});
     this.state[[serviceID]][[subject]] = {rating: 1, details: '', preference: 1};
+    var subjects = service === "tutoring" ? "tutoringSubjects" : "deliveryCategories";
     
     if (this.state[[selection]] == "Other"){
       this.pushToDatabase(this.state[[newsubject]], service);
+      subjects.push({label: this.state[[newsubject]], value: this.state[[newsubject]]})
     }
 
-    var subjects = service === "tutoring" ? "tutoringSubjects" : "deliveryCategories";
 
     this.setState({[serviceID]: this.state[[serviceID]]});
     this.setState({[subjects]: this.state[[subjects]]});

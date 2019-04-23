@@ -10,7 +10,10 @@ import {AsyncStorage} from 'react-native';
  * @type {string}
  */
 const API = '/api/locationtracking/';
-const url = 'http://128.237.185.200:4500';
+import config from '../../config';
+
+console.log(config);
+const url = config.url;
 
 /**
  * Handles all location tracking

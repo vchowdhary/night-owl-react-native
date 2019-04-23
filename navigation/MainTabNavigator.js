@@ -11,6 +11,7 @@ import ProfileScreen from '../screens/ProfileScreen';
 
 import User from '../src/User';
 import MatchRequestScreen from '../screens/MatchRequestScreen';
+import MatchOfferScreen from '../screens/MatchOfferScreen';
 
 
 const HomeStack = createStackNavigator({
@@ -55,6 +56,23 @@ const MatchRequestStack = createStackNavigator({
       headerMode: 'screen',
       headerTitle: 'Make a Request',
       drawerLabel: 'Make a Request',
+      headerLeft: <Button onPress={() => {
+        console.log('pressed');
+        //console.log(navigation);
+        navigation.toggleDrawer()}
+       } title= "="/>
+    }),
+  }
+});
+
+const MatchOfferStack = createStackNavigator({
+  Offer: {
+    screen: MatchOfferScreen,
+    navigationOptions: ({ navigation }) => ({
+      initialRouteName: 'Make an Offer',
+      headerMode: 'screen',
+      headerTitle: 'Make an Offer',
+      drawerLabel: 'Make an Offer',
       headerLeft: <Button onPress={() => {
         console.log('pressed');
         //console.log(navigation);
@@ -118,6 +136,9 @@ const MyDrawerNavigator = createDrawerNavigator({
     Request: {
       screen: MatchRequestStack,
     },
+    Offer: {
+      screen: MatchOfferStack,
+    }
   },
   {
     contentComponent:(props) => (
