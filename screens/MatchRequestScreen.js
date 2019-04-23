@@ -19,6 +19,8 @@ import {
   import {Button, Label, Input, Text, Slider} from 'react-native-elements';
 import RNPickerSelect from 'react-native-picker-select';
 import MapView from 'react-native-maps';
+import Marker from 'react-native-maps';
+import { PROVIDER_GOOGLE } from 'react-native-maps';
 
 import { MonoText } from '../components/StyledText';
 import Geolocation from '../src/Location';
@@ -125,7 +127,7 @@ export default class MatchRequestScreen extends React.Component {
         if (navigator.geolocation) {
             watchId = navigator.geolocation.watchPosition(
                 position => {
-                    console.log(position);
+                    //console.log(position);
                     this.setState(({
                         currentLatLng: {
                             lat: position.coords.latitude,
@@ -185,7 +187,7 @@ async renderDropdown(key) {
               return {label: x["subject"], value: x["subject"]}
             });
             subjects.push({label: "Other", value: "Other"});
-            console.log(subjects);
+            //console.log(subjects);
             this.setState({ [key]: subjects });
           }
           else{
@@ -222,7 +224,7 @@ renderDropdownService(service){
     };
 
     var items = service==="tutoring" ? 'tutoringSubjects' : 'deliveryCategories';
-    console.log(this.state[[items]]);
+    //console.log(this.state[[items]]);
 
     return (
         <View>
@@ -478,9 +480,15 @@ renderDropdownService(service){
                 latitudeDelta: 0.02,
                 longitudeDelta: 0.02
                 }}
-                showsUserLocation={true}
-            />
-
+                provider={PROVIDER_GOOGLE}
+                showsUserLocation={true}>
+                {this.state.markers.map(marker => (
+                  <Marker
+                    coordinate={{latitude: marker.lat, longitude: marker.lng}}
+                  />
+                ))}
+           </MapView>
+            
            <Button onPress={this.matchRequest} title={"Submit"} />
            
         </ScrollView>
