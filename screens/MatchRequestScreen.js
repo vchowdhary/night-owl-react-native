@@ -471,7 +471,7 @@ renderDropdownService(service){
               style={styles.input}
               onChangeText={(value) => { this.requestChange('details', value)}}
               label={"ADDITIONAL DETAILS"}/>
-           <Text h4>{this.state.request.type === 'delivery' ? 'Please select where you are picking up items from (blue marker) and where you will deliver them (red marker)' : 'Please select where you will be tutoring.'}</Text>
+           <Text style={styles.biglabelText}>{this.state.request.type === 'delivery' ? 'Please select where you are picking up items from (blue marker) and where you will deliver them (red marker)' : 'Please select where you will be tutoring.'}</Text>
            <MapView
                 style={styles.map}
                 region={{
@@ -481,10 +481,10 @@ renderDropdownService(service){
                 longitudeDelta: 0.02
                 }}
                 provider={PROVIDER_GOOGLE}
-                showsUserLocation={true}>
+            >
                 {this.state.markers.map(marker => (
                   <Marker
-                    coordinate={{latitude: marker.lat, longitude: marker.lng}}
+                    coordinate={{lat: marker.lat, lng: marker.lng}}
                   />
                 ))}
            </MapView>
