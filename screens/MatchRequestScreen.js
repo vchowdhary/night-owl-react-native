@@ -101,12 +101,7 @@ export default class MatchRequestScreen extends React.Component {
         this.showPosition();
     }
 
-    /**
-     * Clear the watch when leaving this page
-     */
-    async componentWillUnmount(){
-        navigator.geolocation.clearWatch(watchId);
-    }
+    
 
     /**
      * Handles changes in form data.

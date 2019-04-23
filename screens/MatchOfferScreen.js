@@ -102,13 +102,6 @@ export default class MatchRequestScreen extends React.Component {
     }
 
     /**
-     * Clear the watch when leaving this page
-     */
-    async componentWillUnmount(){
-        navigator.geolocation.clearWatch(watchId);
-    }
-
-    /**
      * Handles changes in form data.
      *
      * @private
@@ -481,7 +474,7 @@ renderDropdownService(service){
               style={styles.input}
               onChangeText={(value) => { this.requestChange('details', value)}}
               label={"ADDITIONAL DETAILS"}/>
-           <Text style={styles.biglabelText}>{this.state.offer.type === 'delivery' ? 'Please select where you are delivering your items.' : 'Please select where you will be tutoring.'}</Text>
+           <Text style={styles.biglabelText}>{this.state.offer.type === 'delivery' ? 'Please select where you are delivering your items (red marker) and where you are picking them up (blue marker).' : 'Please select where you will be tutoring.'}</Text>
            <MapView
                 style={styles.map}
                 region={{
