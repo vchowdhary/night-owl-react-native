@@ -21,7 +21,7 @@ import config from '../../config';
 
 
 console.log(config);
-const url = config.url;
+const url = 'http://128.237.192.10:4500';
 
 //'http://128.237.220.65:4500'
 

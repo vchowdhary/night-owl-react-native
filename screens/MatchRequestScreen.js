@@ -75,7 +75,8 @@ export default class MatchRequestScreen extends React.Component {
     'deg2rad',
     'matchRequest',
     'addMatchToRecords',
-    'pushToDatabase',]
+    'pushToDatabase',
+    'onMarkerPositionChanged']
     .forEach(key => {
         this[key] = this[key].bind(this);
     });
@@ -137,7 +138,7 @@ export default class MatchRequestScreen extends React.Component {
                     this.state.markers[0].lat = this.state.currentLatLng.lat;
                     this.state.markers[0].lng = this.state.currentLatLng.lng;
                     this.onChange('markers', this.state.markers);
-                    //console.log(this.state);
+                    console.log(this.state);
                 }
             );
         } else {
@@ -330,7 +331,7 @@ renderDropdownService(service){
         console.log(matchID);
 
         console.log("Getting matches");
-        await fetch(url + API + '?limit=' + 5 + '&request=' + JSON.stringify(this.state.request) + '&matchID=' + matchID,
+        await fetch(url + API + '?limit=' + 5 + '&request=' + JSON.stringify(this.state.request) + '&matchID=' + matchID + '&requester_id=' + this._id,
         {
             method: 'GET'
         })
@@ -430,6 +431,15 @@ renderDropdownService(service){
      });      
  }
 
+ onMarkerPositionChanged(coords, index){
+  console.log(coords);
+  console.log(index);
+  this.state.markers[index].lat = coords.latitude;
+  this.state.markers[index].lng = coords.longitude;
+  this.onChange('markers', this.state.markers);
+  console.log(this.state);
+}
+
   render() {
     const services = [
         {label: 'Tutoring', value: 'tutoring'},
@@ -482,9 +492,11 @@ renderDropdownService(service){
                 }}
                 provider={PROVIDER_GOOGLE}
             >
-                {this.state.markers.map(marker => (
-                  <Marker
-                    coordinate={{lat: marker.lat, lng: marker.lng}}
+                {this.state.markers.map((marker, index) => (
+                  <MapView.Marker draggable
+                    coordinate={{latitude: marker.lat, longitude: marker.lng}}
+                    pinColor={marker.color}
+                    onDragEnd={(e) => this.onMarkerPositionChanged(e.nativeEvent.coordinate, index)}
                   />
                 ))}
            </MapView>
