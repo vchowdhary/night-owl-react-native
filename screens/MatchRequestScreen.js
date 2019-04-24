@@ -1,5 +1,5 @@
 import React from 'react';
-import { WebBrowser } from 'expo';
+import { WebBrowser, Notifications } from 'expo';
 import {
     Image,
     Platform,
@@ -100,8 +100,6 @@ export default class MatchRequestScreen extends React.Component {
         this.renderDropdown('deliveryCategories');
         this.showPosition();
     }
-
-    
 
     /**
      * Handles changes in form data.
@@ -333,8 +331,11 @@ renderDropdownService(service){
         .then((res) => {
             if(res.status == 200 || res.status == 201 || res.status == 204){
                 console.log('SUCCESS GETTING MATCHES');
-                console.log(res._bodyText);
-            
+                console.log(JSON.parse(res._bodyText));
+                var localNotif = {title: 'test', data: (JSON.parse(res._bodyText))};
+                console.log('Local Notification');
+                console.log(localNotif);
+                Notifications.presentLocalNotificationAsync(localNotif);
             }
         })        
     }

@@ -166,7 +166,7 @@ export default class LoginScreen extends React.Component {
         .then(() => {
             var location = new Geolocation();
             location.enableLocationPermission(value.username);
-            this.props.navigation.navigate('Home');
+            this.props.navigation.navigate('Request');
         });
   }
 

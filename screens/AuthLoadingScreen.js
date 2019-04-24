@@ -24,7 +24,7 @@ class AuthLoadingScreen extends React.Component {
     if(userToken !== null)
     {
       //console.log(this.props.navigation);
-      this.props.navigation.navigate('Home');
+      this.props.navigation.navigate('Request');
     }
     else{
       this.props.navigation.navigate('Auth');

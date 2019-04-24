@@ -1,27 +1,40 @@
 import React from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
-import { AppLoading, Asset, Font, Icon } from 'expo';
+import { Platform, StatusBar, StyleSheet, View, Alert, Text, Button } from 'react-native';
+import { AppLoading, Asset, Font, Icon, Permissions, Notifications } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
+import PushNotification from './src/pushNotifications';
+import DropdownAlert from 'react-native-dropdownalert';
 
 export default class App extends React.Component {
   state = {
-    isLoadingComplete: false,
+    isLoadingComplete: false
   };
+
+  componentDidMount()
+  {
+    this._pn = new PushNotification();
+    this._notificationSubscription = Notifications.addListener(this._handleNotification);
+  }
 
   render() {
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
       return (
-        <AppLoading
-          startAsync={this._loadResourcesAsync}
-          onError={this._handleLoadingError}
-          onFinish={this._handleFinishLoading}
-        />
+        <View>
+          <AppLoading
+            startAsync={this._loadResourcesAsync}
+            onError={this._handleLoadingError}
+            onFinish={this._handleFinishLoading}
+          />
+        </View>
       );
     } else {
       return (
         <View style={styles.container}>
           {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+          
           <AppNavigator />
+          <DropdownAlert ref={ref => this._dropdown = ref} closeInterval={2000}
+          showCancel={true} onClose={(data) => {console.log(data)}}/>
         </View>
       );
     }
@@ -52,6 +65,13 @@ export default class App extends React.Component {
   _handleFinishLoading = () => {
     this.setState({ isLoadingComplete: true });
   };
+
+  _handleNotification = (notification) => {
+    console.log(notification.data);
+    this._dropdown.alertWithType('info', 'Look', notification.data);
+    this._pn.handleNotification(notification);
+  };
+
 }
 
 const styles = StyleSheet.create({
