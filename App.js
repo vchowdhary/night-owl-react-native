@@ -15,10 +15,6 @@ export default class App extends React.Component {
     Permissions.askAsync(Permissions.NOTIFICATIONS);
     this._pn = new PushNotification();
     this._notificationSubscription = Notifications.addListener(this._handleNotification);
-    var localNotif = {title: 'test', body: 'dgah', data: {message: 'blah'}};
-    console.log('Local Notification');
-    console.log(localNotif);
-    Notifications.presentLocalNotificationAsync(localNotif);
   }
 
   render() {
@@ -87,6 +83,23 @@ export default class App extends React.Component {
   _onClose = (data) => {
     console.log(data);
     console.log(data.action);
+    if (data.action === 'tap' && data.payload.type == 'match_request')
+    {
+      Alert.alert(
+        'Match Request',
+        data.payload.message,
+        [
+          {text: 'Maybe later', onPress: () => this._pn.setStatus(data.payload.notif_id, 'later')},
+          {
+            text: 'No',
+            onPress: () => this._pn.setStatus(data.payload.notif_id, 'rejected'),
+            style: 'cancel',
+          },
+          {text: 'Yes', onPress: () => this._pn.setStatus(data.payload.notif_id, 'accepted')},
+        ],
+        {cancelable: false},
+      );
+    }
   }
 
   _onCancel = (data) => {

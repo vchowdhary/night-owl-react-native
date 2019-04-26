@@ -6,6 +6,7 @@ import config from '../config';
 
 const url = config.url;
 const API = '/api/tokens/';
+const API2 = '/api/notifications'
 
 export default class PushNotification {
     constructor(){
@@ -73,6 +74,7 @@ export default class PushNotification {
 
     handleMatchNotification(notification){
         console.log(notification);
+
     }
 
     handleNotification(notification){
@@ -81,5 +83,24 @@ export default class PushNotification {
         {
             this.handleMatchNotification(notification);
         }
+    }
+
+    async setStatus(id, status){
+        await fetch(url + API2, {
+            method: 'PUT',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: id,
+                status: status,
+                update: true
+            }),
+        })
+        .then((res) =>
+        {
+            console.log(res.status);
+        });
     }
 }
