@@ -324,20 +324,18 @@ renderDropdownService(service){
         console.log(matchID);
 
         console.log("Getting matches");
-        await fetch(url + API + '?limit=' + 5 + '&request=' + JSON.stringify(this.state.request) + '&matchID=' + matchID + '&requester_id=' + this._id,
+        const localNotif = await fetch(url + API + '?limit=' + 5 + '&request=' + JSON.stringify(this.state.request) + '&matchID=' + matchID + '&requester_id=' + this._id,
         {
             method: 'GET'
         })
-        .then((res) => {
+        .then(function(res){
             if(res.status == 200 || res.status == 201 || res.status == 204){
                 console.log('SUCCESS GETTING MATCHES');
-                console.log(JSON.parse(res._bodyText));
-                var localNotif = {title: 'test', data: (JSON.parse(res._bodyText))};
-                console.log('Local Notification');
-                console.log(localNotif);
-                Notifications.presentLocalNotificationAsync(localNotif);
+                var localNotif = {title: 'Match', body: 'dgah', data: (JSON.parse(res._bodyText))};
+                return localNotif;
             }
-        })        
+        });
+        Notifications.presentLocalNotificationAsync(localNotif);        
     }
 
     calculateDistance(lat1, lon1, lat2, lon2){

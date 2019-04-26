@@ -12,8 +12,13 @@ export default class App extends React.Component {
 
   componentDidMount()
   {
+    Permissions.askAsync(Permissions.NOTIFICATIONS);
     this._pn = new PushNotification();
     this._notificationSubscription = Notifications.addListener(this._handleNotification);
+    var localNotif = {title: 'test', body: 'dgah', data: {message: 'blah'}};
+    console.log('Local Notification');
+    console.log(localNotif);
+    Notifications.presentLocalNotificationAsync(localNotif);
   }
 
   render() {
@@ -33,8 +38,8 @@ export default class App extends React.Component {
           {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
           
           <AppNavigator />
-          <DropdownAlert ref={ref => this._dropdown = ref} closeInterval={2000}
-          showCancel={true} onClose={(data) => {console.log(data)}}/>
+          <DropdownAlert ref={ref => this._dropdown = ref} closeInterval={3000}
+          showCancel={true} onClose={this._onClose} onCancel={this._onClose}/>
         </View>
       );
     }
@@ -67,10 +72,28 @@ export default class App extends React.Component {
   };
 
   _handleNotification = (notification) => {
+    console.log(notification);
     console.log(notification.data);
-    this._dropdown.alertWithType('info', 'Look', notification.data);
-    this._pn.handleNotification(notification);
+    if(notification.data.type === 'match_request')
+    {
+      this._dropdown.alertWithType('info', 'Match Request', notification.data.from_id, notification.data, 3000);
+    }
+    else{
+      console.log('Type not match');
+      this._dropdown.alertWithType('info', 'Look', notification.data.message, notification.data, 3000);
+    }
   };
+
+  _onClose = (data) => {
+    console.log(data);
+    console.log(data.action);
+  }
+
+  _onCancel = (data) => {
+    console.log("Cancelled");
+    console.log(data);
+    
+  }
 
 }
 
