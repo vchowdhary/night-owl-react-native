@@ -87,6 +87,8 @@ export default class PushNotification {
     }
 
     static async setStatus(notification, status){
+        console.log("Change status");
+        console.log(status);
         await fetch(url + API3, {
             method: 'PUT',
             headers: {

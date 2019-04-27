@@ -72,7 +72,11 @@ export default class App extends React.Component {
     console.log(notification.data);
     if(notification.data.type === 'match_request')
     {
-      this._dropdown.alertWithType('info', 'Match Request', notification.data.from_id, notification.data, 3000);
+      this._dropdown.alertWithType('info', "Match Request", "New match request from:" + notification.data.from_id, notification.data, 3000);
+    }
+    else if(notification.data.type === 'match_failed')
+    {
+      this._dropdown.alertWithType('error', "Match Failed", notification.data.message, null, 2000);
     }
     else{
       console.log('Type not match');
@@ -81,10 +85,9 @@ export default class App extends React.Component {
   };
 
   _onClose = (data) => {
-    console.log(data);
-    console.log(data.action);
     if (data.action === 'tap' && data.payload.type == 'match_request')
     {
+      console.log('Tapped match request');
       Alert.alert(
         'Match Request',
         data.payload.message,
