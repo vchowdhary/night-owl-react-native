@@ -76,7 +76,7 @@ export default class App extends React.Component {
     }
     else if(notification.data.type === 'match_failed')
     {
-      this._dropdown.alertWithType('error', "Match Failed", notification.data.message, null, 2000);
+      this._dropdown.alertWithType('error', "Match Failed", notification.data.message, notification.data, 2000);
     }
     else{
       console.log('Type not match');
@@ -85,24 +85,37 @@ export default class App extends React.Component {
   };
 
   _onClose = (data) => {
-    if (data.action === 'tap' && data.payload.type == 'match_request')
+    if (data.payload.type == 'match_request')
     {
-      console.log('Tapped match request');
-      Alert.alert(
-        'Match Request',
-        data.payload.message,
-        [
-          {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload, 'later')},
-          {
-            text: 'No',
-            onPress: () => PushNotification.setStatus(data.payload, 'rejected'),
-            style: 'cancel',
-          },
-          {text: 'Yes', onPress: () => PushNotification.setStatus(data.payload, 'accepted')},
-        ],
-        {cancelable: false},
-      );
+      if(data.action === 'tap')
+      {
+        console.log('Tapped match request');
+          Alert.alert(
+            'Match Request',
+            data.payload.message,
+            [
+              {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload, 'later')},
+              {
+                text: 'No',
+                onPress: () => PushNotification.setStatus(data.payload, 'rejected'),
+                style: 'cancel',
+              },
+              {text: 'Yes', onPress: () => PushNotification.setStatus(data.payload, 'accepted')},
+            ],
+            {cancelable: false},
+          );
+      }
+      if(data.action === 'automatic')
+      {
+        console.log('Missed match request');
+        PushNotification.setStatus(data.payload, 'missed');
+      }
+      if(data.action === 'pan'){
+        console.log('Panned match request');
+        PushNotification.setStatus(data.payload, 'later');
+      }
     }
+      
   }
 
   _onCancel = (data) => {
