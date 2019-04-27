@@ -6,7 +6,8 @@ import config from '../config';
 
 const url = config.url;
 const API = '/api/tokens/';
-const API2 = '/api/notifications'
+const API2 = '/api/notifications';
+const API3 = '/api/matchnotifications';
 
 export default class PushNotification {
     constructor(){
@@ -85,22 +86,26 @@ export default class PushNotification {
         }
     }
 
-    async setStatus(id, status){
-        await fetch(url + API2, {
+    static async setStatus(notification, status){
+        await fetch(url + API3, {
             method: 'PUT',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                id: id,
+                id: notification.match_notif_id,
                 status: status,
-                update: true
+                match_id: notification.to_id,
+                attempt: notification.attempt,
+                request: notification.req,
+                match_number: notification.matchID,
             }),
         })
         .then((res) =>
         {
             console.log(res.status);
+            console.log(res._bodyText);
         });
     }
 }

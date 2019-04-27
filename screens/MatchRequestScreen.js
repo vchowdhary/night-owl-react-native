@@ -318,20 +318,22 @@ renderDropdownService(service){
 
         this.state.request.location = { lat: this.state.markers[0].lat, lng: this.state.markers[0].lng };
 
-        const matchID = this.addMatchToRecords(this.state.request, true);
-        console.log(matchID);
+        await this.addMatchToRecords(this.state.request, true)
+        .then(async (matchID) => {
+          console.log(matchID);
 
-        console.log("Getting matches");
-        const localNotif = await fetch(url + API + '?limit=' + 5 + '&request=' + JSON.stringify(this.state.request) + '&matchID=' + matchID + '&requester_id=' + this._id,
-        {
-            method: 'GET'
-        })
-        .then(function(res){
-            if(res.status == 200 || res.status == 201 || res.status == 204){
-                console.log('SUCCESS GETTING MATCHES');
-            }
-        });
-        Notifications.presentLocalNotificationAsync(localNotif);        
+          console.log("Getting matches");
+          const localNotif = await fetch(url + API + '?limit=' + 5 + '&request=' + JSON.stringify(this.state.request) + '&matchID=' + matchID + '&requester_id=' + this._id,
+          {
+              method: 'GET'
+          })
+          .then(function(res){
+              if(res.status == 200 || res.status == 201 || res.status == 204){
+                  console.log('SUCCESS GETTING MATCHES');
+              }
+          });
+          Notifications.presentLocalNotificationAsync(localNotif);   
+        });     
     }
 
     calculateDistance(lat1, lon1, lat2, lon2){
@@ -363,7 +365,7 @@ renderDropdownService(service){
         console.log('Adding match to records');
         if (isRequest)
         {
-            await fetch(url + API2, {
+            const result = await fetch(url + API2, {
                 method: 'PUT',
                 headers: {
                     Accept: 'application/json',
@@ -376,8 +378,11 @@ renderDropdownService(service){
                 if(res.status == 200 || res.status == 201 || res.status == 204){
                     console.log("SUCCESS");
                     console.log(res._bodyText);
+                    return res._bodyText;
                 }
-            })
+            });
+            console.log(result);
+            return result;
         }
         else{
             await fetch(url + API2, {
@@ -393,6 +398,7 @@ renderDropdownService(service){
                 if(res.status == 200 || res.status == 201 || res.status == 204){
                     console.log("SUCCESS");
                     console.log(res._bodyText);
+                    return res._bodyText;
                 }
             })
         }

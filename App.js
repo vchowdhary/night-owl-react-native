@@ -89,13 +89,13 @@ export default class App extends React.Component {
         'Match Request',
         data.payload.message,
         [
-          {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload.notif_id, 'later')},
+          {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload, 'later')},
           {
             text: 'No',
-            onPress: () => PushNotification.setStatus(data.payload.notif_id, 'rejected'),
+            onPress: () => PushNotification.setStatus(data.payload, 'rejected'),
             style: 'cancel',
           },
-          {text: 'Yes', onPress: () => PushNotification.setStatus(data.payload.notif_id, 'accepted')},
+          {text: 'Yes', onPress: () => PushNotification.setStatus(data.payload, 'accepted')},
         ],
         {cancelable: false},
       );
