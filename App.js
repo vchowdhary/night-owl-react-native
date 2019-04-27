@@ -13,7 +13,7 @@ export default class App extends React.Component {
   componentDidMount()
   {
     Permissions.askAsync(Permissions.NOTIFICATIONS);
-    this._pn = new PushNotification();
+    PushNotification.registerForPushNotificationsAsync();
     this._notificationSubscription = Notifications.addListener(this._handleNotification);
   }
 
@@ -52,7 +52,7 @@ export default class App extends React.Component {
         ...Icon.Ionicons.font,
         // We include SpaceMono because we use it in HomeScreen.js. Feel free
         // to remove this if you are not using it in your app
-        'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
+        'Arial': require('./assets/fonts/SpaceMono-Regular.ttf'),
       }),
     ]);
   };
@@ -89,13 +89,13 @@ export default class App extends React.Component {
         'Match Request',
         data.payload.message,
         [
-          {text: 'Maybe later', onPress: () => this._pn.setStatus(data.payload.notif_id, 'later')},
+          {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload.notif_id, 'later')},
           {
             text: 'No',
-            onPress: () => this._pn.setStatus(data.payload.notif_id, 'rejected'),
+            onPress: () => PushNotification.setStatus(data.payload.notif_id, 'rejected'),
             style: 'cancel',
           },
-          {text: 'Yes', onPress: () => this._pn.setStatus(data.payload.notif_id, 'accepted')},
+          {text: 'Yes', onPress: () => PushNotification.setStatus(data.payload.notif_id, 'accepted')},
         ],
         {cancelable: false},
       );

@@ -10,10 +10,10 @@ const API2 = '/api/notifications'
 
 export default class PushNotification {
     constructor(){
-        this.registerForPushNotificationsAsync();
+        PushNotification.registerForPushNotificationsAsync();
     }
 
-    async registerForPushNotificationsAsync() {
+    static async registerForPushNotificationsAsync() {
         const id = await AsyncStorage.getItem("userToken");
         console.log(id);
 
@@ -72,12 +72,12 @@ export default class PushNotification {
         }
     }
 
-    handleMatchNotification(notification){
+    static handleMatchNotification(notification){
         console.log(notification);
 
     }
 
-    handleNotification(notification){
+    static handleNotification(notification){
         console.log(notification);
         if (notification.data.type === 'match')
         {

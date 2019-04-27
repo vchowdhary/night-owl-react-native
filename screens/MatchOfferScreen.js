@@ -541,14 +541,12 @@ const styles = StyleSheet.create({
     color: '#708090',
     fontSize: 18,
     fontWeight: 'bold',
-    fontFamily: 'Arial',
     padding: 10,
   },
   labelText: {
     color: '#708090',
     fontSize: 14,
     fontWeight: 'bold',
-    fontFamily: 'Arial',
     padding: 5,
   },
   input: {

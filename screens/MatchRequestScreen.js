@@ -54,8 +54,8 @@ export default class MatchRequestScreen extends React.Component {
         selectedsubject: '',
         newTutoringSubject: '',
         newDeliveryCategory: '',
-        tutoringSubjects: {},
-        deliveryCategories: {},
+        tutoringSubjects: [],
+        deliveryCategories: [],
         currentLatLng: {
             lat: 0,
             lng: 0
@@ -212,7 +212,7 @@ addMarker(){
 
 renderDropdownService(service){
     const placeholder = {
-      label: service === "tutoring" ? 'Select a subject...' : 'Select a category...',
+      label: 'Select a subject...',
       value: null,
       color: '#9EA0A4',
     };
@@ -234,7 +234,6 @@ renderDropdownService(service){
             ...pickerSelectStyles,
             placeholder: {
               color: 'gray',
-              fontSize: 12,
               fontWeight: 'bold',
             },
           }}
@@ -252,7 +251,6 @@ renderDropdownService(service){
               ...pickerSelectStyles,
               placeholder: {
                 color: 'gray',
-                fontSize: 12,
                 fontWeight: 'bold',
               },
             }}
@@ -331,8 +329,6 @@ renderDropdownService(service){
         .then(function(res){
             if(res.status == 200 || res.status == 201 || res.status == 204){
                 console.log('SUCCESS GETTING MATCHES');
-                var localNotif = {title: 'Match', body: 'dgah', data: (JSON.parse(res._bodyText))};
-                return localNotif;
             }
         });
         Notifications.presentLocalNotificationAsync(localNotif);        
@@ -457,7 +453,6 @@ renderDropdownService(service){
                 ...pickerSelectStyles,
                 placeholder: {
                   color: 'gray',
-                  fontSize: 12,
                   fontWeight: 'bold',
                 }
         }}/>
@@ -487,7 +482,7 @@ renderDropdownService(service){
                 provider={PROVIDER_GOOGLE}
             >
                 {this.state.markers.map((marker, index) => (
-                  <MapView.Marker draggable
+                  <MapView.Marker key={index} draggable
                     coordinate={{latitude: marker.lat, longitude: marker.lng}}
                     pinColor={marker.color}
                     onDragEnd={(e) => this.onMarkerPositionChanged(e.nativeEvent.coordinate, index)}
@@ -542,14 +537,12 @@ const styles = StyleSheet.create({
     color: '#708090',
     fontSize: 18,
     fontWeight: 'bold',
-    fontFamily: 'Arial',
     padding: 10,
   },
   labelText: {
     color: '#708090',
     fontSize: 14,
     fontWeight: 'bold',
-    fontFamily: 'Arial',
     padding: 5,
   },
   input: {

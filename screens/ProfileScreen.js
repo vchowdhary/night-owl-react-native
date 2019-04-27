@@ -700,7 +700,6 @@ async componentWillMount() {
                       disabled={this.state.disabled}
                       onPress={({idex}) => this.removeFromService(item.label, index, "tutoring", false)}><Text style={{
                         color: '#fff',
-                        fontFamily: 'Arial',
                         fontWeight: 'bold',
                         fontSize: 18,
                         justifyContent: 'center',
@@ -788,7 +787,6 @@ async componentWillMount() {
                     style = {{backgroundColor: '#e20000', flex: 1,  alignItems: 'center'}}
                     onPress={({idex}) => this.removeFromService(item.label, index, "delivery", false)}><Text style={{
                       color: '#fff',
-                      fontFamily: 'Arial',
                       fontWeight: 'bold',
                       fontSize: 18,
                       justifyContent: 'center',
@@ -853,7 +851,6 @@ async componentWillMount() {
                     style = {{backgroundColor: '#e20000', flex: 1,  alignItems: 'center'}}
                     onPress={({idex}) => this.removeFromService(item.label, index, "tutoring", true)}><Text style={{
                       color: '#fff',
-                      fontFamily: 'Arial',
                       fontWeight: 'bold',
                       fontSize: 18,
                       justifyContent: 'center',
@@ -918,7 +915,6 @@ async componentWillMount() {
                     style = {{backgroundColor: '#e20000', flex: 1,  alignItems: 'center'}}
                     onPress={({idex}) => this.removeFromService(item.label, index, "delivery", true)}><Text style={{
                       color: '#fff',
-                      fontFamily: 'Arial',
                       fontWeight: 'bold',
                       fontSize: 18,
                       justifyContent: 'center',
@@ -1005,14 +1001,12 @@ const styles = StyleSheet.create({
     color: '#708090',
     fontSize: 18,
     fontWeight: 'bold',
-    fontFamily: 'Arial',
     padding: 10,
   },
   labelText: {
     color: '#708090',
     fontSize: 14,
     fontWeight: 'bold',
-    fontFamily: 'Arial',
     padding: 5,
   },
   input: {
@@ -1022,7 +1016,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-    fontFamily: 'Arial'
   },
   header: {
     backgroundColor: '#a6aebc',
