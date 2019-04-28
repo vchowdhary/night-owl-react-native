@@ -53,6 +53,7 @@ export default class App extends React.Component {
         // We include SpaceMono because we use it in HomeScreen.js. Feel free
         // to remove this if you are not using it in your app
         'Arial': require('./assets/fonts/SpaceMono-Regular.ttf'),
+        'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf')
       }),
     ]);
   };
@@ -72,17 +73,27 @@ export default class App extends React.Component {
     console.log(notification.data);
     if(notification.data.type === 'match_request')
     {
-      this._dropdown.alertWithType('info', "Match Request", "New match request from:" + notification.data.from_id, notification.data, 3000);
+      var message = "New match request from: " + notification.data.from_id;
+      this._dropdown.alertWithType('info', "Match Request", message, notification.data, 3000);
     }
     else if(notification.data.type === 'match_failed')
     {
       this._dropdown.alertWithType('error', "Match Failed", notification.data.message, notification.data, 2000);
+    }
+    else if(notification.data.type === 'match_request_confirmed')
+    {
+      this._dropdown.alertWithType('success', "Request Confirmed", notification.data.message, notification.data, 2000);
     }
     else{
       console.log('Type not match');
       this._dropdown.alertWithType('info', 'Look', notification.data.message, notification.data, 3000);
     }
   };
+
+  _acceptMatch = (data) => {
+    PushNotification.setStatus(data.payload, "accepted");
+    this._dropdown.alertWithType('info', 'Match confirmed! Please rate your match at the Inbox page!', data, 3000);
+  }
 
   _onClose = (data) => {
     if (data.payload.type == 'match_request')
@@ -100,7 +111,7 @@ export default class App extends React.Component {
                 onPress: () => PushNotification.setStatus(data.payload, 'rejected'),
                 style: 'cancel',
               },
-              {text: 'Yes', onPress: () => PushNotification.setStatus(data.payload, 'accepted')},
+              {text: 'Yes', onPress: () => this._acceptMatch(data)},
             ],
             {cancelable: false},
           );
