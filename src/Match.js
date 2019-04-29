@@ -14,6 +14,11 @@ import { WebBrowser } from 'expo';
 import {Button, Label, Input, Text, Slider} from 'react-native-elements';
 import Modal from 'react-native-modalbox';
 
+import config from '../config';
+
+const url = config.url;
+const API = '/api/history/';
+
 export default class Match extends React.Component{
     constructor(props)
     {
@@ -24,7 +29,8 @@ export default class Match extends React.Component{
         };
 
         ['rateRequest',
-        'rateOffer']
+        'onStarRatingPress',
+        'submitRating']
     .forEach(key => {
         this[key] = this[key].bind(this);
     });
@@ -36,9 +42,32 @@ export default class Match extends React.Component{
       console.log(matchID);
     }
 
-    rateOffer(matchID)
+    
+
+    onStarRatingPress(rating) {
+        this.setState({
+          rating: rating
+        });
+    }
+
+
+    async submitRating()
     {
-        console.log(matchID);
+        await fetch(url+API, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                matchID: this.props.data.id,
+                rating: this.state.rating,
+                type: this.props.type
+            }),
+        })
+        .then((res) => {
+            console.log(res.status);
+            this.refs.modal3.close();
+        });
     }
 
     render()
@@ -81,9 +110,16 @@ export default class Match extends React.Component{
                     :   null}
                     <Text style={styles.labelText}> Location: </Text>
                     <Text> {this.props.data.location.lat + ', ' + this.props.data.location.lng} </Text>
-                    <Button onPress={() => { this.props.type === 'request' ? this.rateRequest(this.props.data.id) : this.rateOffer(this.props.data.id)}} title={"Rate This Match"} />
-                    <Modal style={[styles.modal, styles.modal3]} position={"center"} ref={"modal3"}>
-                        <Text style={styles.text}> Modal centered </Text>
+                    <Button onPress={() => { this.rateRequest(this.props.data.id)}} title={"Rate This Match"} />
+                    <Modal style={styles.modal3} position={"center"} ref={"modal3"}>
+                        <Text style={styles.labelText}> Rate your match </Text>
+                        <StarRating
+                            disabled={false}
+                            maxStars={5}
+                            rating={this.state.rating}
+                            selectedStar={(rating) => this.onStarRatingPress(rating)}
+                        />
+                        <Button style={styles.btn} onPress={() => this.submitRating()} title={"Submit"} />
                         <Button onPress={() => this.refs.modal3.close()} title={"Cancel"}/>
                     </Modal>
               
@@ -199,17 +235,12 @@ const styles = StyleSheet.create({
     },
     modal3: {
         height: 300,
-        width: 300
-      },
+        width: 300,
+        alignItems: 'center',
+    },
     
-      modal4: {
-        height: 300
-      },
-    
-      btn: {
-        margin: 10,
-        backgroundColor: "#3B5998",
-        color: "white",
+    btn: {
+        flex: 1,
         padding: 10
-      },
+    },
   });

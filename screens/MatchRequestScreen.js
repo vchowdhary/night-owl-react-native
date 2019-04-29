@@ -323,7 +323,7 @@ renderDropdownService(service){
           console.log(matchID);
 
           console.log("Getting matches");
-          const localNotif = await fetch(url + API + '?limit=' + 5 + '&request=' + JSON.stringify(this.state.request) + '&matchID=' + matchID + '&requester_id=' + this._id,
+          await fetch(url + API + '?limit=' + 5 + '&request=' + JSON.stringify(this.state.request) + '&matchID=' + matchID + '&requester_id=' + this._id,
           {
               method: 'GET'
           })
@@ -331,8 +331,7 @@ renderDropdownService(service){
               if(res.status == 200 || res.status == 201 || res.status == 204){
                   console.log('SUCCESS GETTING MATCHES');
               }
-          });
-          Notifications.presentLocalNotificationAsync(localNotif);   
+          });  
         });     
     }
 

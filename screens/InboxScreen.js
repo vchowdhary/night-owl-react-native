@@ -133,6 +133,7 @@ export default class InboxScreen extends React.Component {
 
   render() {
     console.log(this.state.matches === []);
+    console.log(this.state.matches);
     return (
       <View style={styles.container}>
         <Text style={styles.biglabelText}>YOUR PENDING MATCHES</Text>
@@ -140,6 +141,7 @@ export default class InboxScreen extends React.Component {
             ItemSeparatorComponent={this.renderSeparator}
             style={styles.container}
             data={this.state.matches}
+            extraData={this.state.matches}
             renderItem={({item}) => { 
                console.log("Rendering item");
                //console.log(item);
