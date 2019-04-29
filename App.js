@@ -2,6 +2,7 @@ import React from 'react';
 import { Platform, StatusBar, StyleSheet, View, Alert, Text, Button } from 'react-native';
 import { AppLoading, Asset, Font, Icon, Permissions, Notifications } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
+import MainTabNavigator from './navigation/MainTabNavigator';
 import PushNotification from './src/pushNotifications';
 import DropdownAlert from 'react-native-dropdownalert';
 
@@ -33,7 +34,7 @@ export default class App extends React.Component {
         <View style={styles.container}>
           {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
           
-          <AppNavigator />
+          <AppNavigator ref={ref => this._navigator = ref}/>
           <DropdownAlert ref={ref => this._dropdown = ref} closeInterval={3000}
           showCancel={true} onClose={this._onClose} onCancel={this._onClose}/>
         </View>
@@ -82,7 +83,7 @@ export default class App extends React.Component {
     }
     else if(notification.data.type === 'match_request_confirmed')
     {
-      this._dropdown.alertWithType('success', "Request Confirmed", notification.data.message, notification.data, 2000);
+      this._dropdown.alertWithType('success', "Request Confirmed", notification.data.message, notification, 2000);
     }
     else{
       console.log('Type not match');
@@ -92,11 +93,13 @@ export default class App extends React.Component {
 
   _acceptMatch = (data) => {
     PushNotification.setStatus(data.payload, "accepted");
-    this._dropdown.alertWithType('info', 'Match confirmed! Please rate your match at the Inbox page!', data, 3000);
+    this._dropdown.alertWithType('info', 'Match confirmed!', 'Please rate your match at the Inbox page!', null, 3000);
   }
 
   _onClose = (data) => {
-    if (data.payload.type == 'match_request')
+    console.log(data.payload.type === 'match_request_confirmed');
+    console.log(data.title === 'Request Confirmed');
+    if (data.payload.type === 'match_request')
     {
       if(data.action === 'tap')
       {
@@ -121,12 +124,23 @@ export default class App extends React.Component {
         console.log('Missed match request');
         PushNotification.setStatus(data.payload, 'missed');
       }
-      if(data.action === 'pan'){
+      if(data.action === 'pan' || data.action === 'cancel'){
         console.log('Panned match request');
         PushNotification.setStatus(data.payload, 'later');
       }
     }
-      
+    else if(data.payload.type === "match_request_confirmed" && data.title === "Request Confirmed")
+    {
+      conso
+      console.log(data.action);
+      if(data.action === "tap")
+      {
+        console.log("Going to inbox");
+        console.log(this._navigator);
+        this._navigator.navigate('Inbox');
+        //Navigate to inbox here
+      }
+    }
   }
 
   _onCancel = (data) => {

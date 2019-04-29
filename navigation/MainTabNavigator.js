@@ -12,6 +12,7 @@ import ProfileScreen from '../screens/ProfileScreen';
 import User from '../src/User';
 import MatchRequestScreen from '../screens/MatchRequestScreen';
 import MatchOfferScreen from '../screens/MatchOfferScreen';
+import InboxScreen from '../screens/InboxScreen';
 
 
 const HomeStack = createStackNavigator({
@@ -82,6 +83,23 @@ const MatchOfferStack = createStackNavigator({
   }
 });
 
+const InboxStack = createStackNavigator({
+  Offer: {
+    screen: InboxScreen,
+    navigationOptions: ({ navigation }) => ({
+      initialRouteName: 'Inbox',
+      headerMode: 'screen',
+      headerTitle: 'Inbox',
+      drawerLabel: 'Inbox',
+      headerLeft: <Button onPress={() => {
+        console.log('pressed');
+        //console.log(navigation);
+        navigation.toggleDrawer()}
+       } title= "="/>
+    }),
+  }
+});
+
 
 const LinksStack = createStackNavigator({
   Links: LinksScreen,
@@ -132,7 +150,10 @@ const MyDrawerNavigator = createDrawerNavigator({
     },
     Offer: {
       screen: MatchOfferStack,
-    }
+    },
+    Inbox: {
+      screen: InboxStack,
+    },
   },
   {
     contentComponent:(props) => (

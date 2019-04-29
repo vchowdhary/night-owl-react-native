@@ -1,5 +1,5 @@
 var config = { 
-    url: "http://128.237.212.36:5000" 
+    url: "http://128.237.195.95:5000" 
 };
 
 module.exports = config;
