@@ -102,6 +102,7 @@ export default class PushNotification {
                 attempt: notification.attempt,
                 request: notification.req,
                 match_number: notification.matchID,
+                isRequest: notification.isRequest,
             }),
         })
         .then((res) =>

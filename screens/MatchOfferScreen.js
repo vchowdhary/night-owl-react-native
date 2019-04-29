@@ -320,21 +320,23 @@ renderDropdownService(service){
 
         this.state.offer.location = { lat: this.state.markers[0].lat, lng: this.state.markers[0].lng };
 
-        const matchID = this.addMatchToRecords(this.state.offer, false);
-        console.log(matchID);
+        await this.addMatchToRecords(this.state.offer, false)
+        .then(async (matchID) => {
+          console.log(matchID);
 
-        console.log("Getting matches");
-        await fetch(url + API + '?limit=' + 5 + '&offer=' + JSON.stringify(this.state.offer) + '&matchID=' + matchID + '&provider_id=' + this._id,
-        {
-            method: 'GET'
-        })
-        .then((res) => {
-            if(res.status == 200 || res.status == 201 || res.status == 204){
-                console.log('SUCCESS GETTING MATCHES');
-                console.log(res._bodyText);
-            
-            }
-        })        
+          console.log("Getting matches");
+          await fetch(url + API + '?limit=' + 5 + '&offer=' + JSON.stringify(this.state.offer) + '&matchID=' + matchID + '&provider_id=' + this._id,
+          {
+              method: 'GET'
+          })
+          .then((res) => {
+              if(res.status == 200 || res.status == 201 || res.status == 204){
+                  console.log('SUCCESS GETTING MATCHES');
+                  console.log(res._bodyText);
+              
+              }
+          });
+        });    
     }
 
     calculateDistance(lat1, lon1, lat2, lon2){
@@ -379,11 +381,12 @@ renderDropdownService(service){
                 if(res.status == 200 || res.status == 201 || res.status == 204){
                     console.log("SUCCESS");
                     console.log(res._bodyText);
+                    return res._bodyText;
                 }
             })
         }
         else{
-            await fetch(url + API2, {
+            const result = await fetch(url + API2, {
                 method: 'PUT',
                 headers: {
                     Accept: 'application/json',
@@ -396,8 +399,11 @@ renderDropdownService(service){
                 if(res.status == 200 || res.status == 201 || res.status == 204){
                     console.log("SUCCESS");
                     console.log(res._bodyText);
+                    return res._bodyText;
                 }
-            })
+            });
+            console.log(result);
+            return result;
         }
     }
     

@@ -85,6 +85,15 @@ export default class App extends React.Component {
     {
       this._dropdown.alertWithType('success', "Request Confirmed", notification.data.message, notification, 2000);
     }
+    else if(notification.data.type === 'match_offer')
+    {
+      var message = "New match offer from: " + notification.data.from_id;
+      this._dropdown.alertWithType('info', "Match Offer", message, notification.data, 3000);
+    }
+    else if(notification.data.type === 'match_offer_confirmed')
+    {
+      this._dropdown.alertWithType('success', "Offer Confirmed", notification.data.message, notification, 2000);
+    }
     else{
       console.log('Type not match');
       this._dropdown.alertWithType('info', 'Look', notification.data.message, notification.data, 3000);
@@ -131,7 +140,6 @@ export default class App extends React.Component {
     }
     else if(data.payload.type === "match_request_confirmed" && data.title === "Request Confirmed")
     {
-      conso
       console.log(data.action);
       if(data.action === "tap")
       {
@@ -139,6 +147,36 @@ export default class App extends React.Component {
         console.log(this._navigator);
         this._navigator.navigate('Inbox');
         //Navigate to inbox here
+      }
+    }
+    else if (data.payload.type === 'match_offer')
+    {
+      if(data.action === 'tap')
+      {
+        console.log('Tapped match offer');
+          Alert.alert(
+            'Match Offer',
+            data.payload.message,
+            [
+              {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload, 'later')},
+              {
+                text: 'No',
+                onPress: () => PushNotification.setStatus(data.payload, 'rejected'),
+                style: 'cancel',
+              },
+              {text: 'Yes', onPress: () => this._acceptMatch(data)},
+            ],
+            {cancelable: false},
+          );
+      }
+      if(data.action === 'automatic')
+      {
+        console.log('Missed match offer');
+        PushNotification.setStatus(data.payload, 'missed');
+      }
+      if(data.action === 'pan' || data.action === 'cancel'){
+        console.log('Panned match offer');
+        PushNotification.setStatus(data.payload, 'later');
       }
     }
   }
