@@ -164,6 +164,7 @@ export default class LoginScreen extends React.Component {
         this._login(value.username, value.password)
         await AsyncStorage.setItem('userToken', value.username)
         .then(() => {
+            console.log('Getting locations');
             var location = new Geolocation();
             location.enableLocationPermission(value.username);
             this.props.navigation.navigate('Request');

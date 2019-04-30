@@ -1,5 +1,5 @@
 import React from 'react';
-import { WebBrowser, Notifications } from 'expo';
+import { Location, TaskManager } from 'expo';
 import {
     Image,
     Platform,
@@ -32,12 +32,14 @@ const url = config.url;
 const API3 = '/api/subjects';
 const API2 = '/api/history/';
 const API = '/api/match/';
+const API4 = '/api/locationtracking/';
 
 export default class MatchRequestScreen extends React.Component {
   constructor(props){
     super(props);
 
     this.state = {
+        id: '', 
         profile: {},
         loading: false,
         redirect: false,
@@ -76,29 +78,46 @@ export default class MatchRequestScreen extends React.Component {
     'matchRequest',
     'addMatchToRecords',
     'pushToDatabase',
-    'onMarkerPositionChanged']
+    'onMarkerPositionChanged',
+     'updatePosition']
     .forEach(key => {
         this[key] = this[key].bind(this);
     });
   }
 
-  
-  async componentDidMount(){
-    console.log('Params');
-    const id = await AsyncStorage.getItem("userToken");
-    console.log(id);
-    this._id = id;
-    console.log('id');
-    console.log(this._id);
-  }
 
   /**
      * runs when component will mount
      */
     async componentWillMount(){
+      TaskManager.defineTask("backgroundlocation", async ({ data: { locations }, error }) => {
+        if (error) {
+          // check `error.message` for more details.
+          console.log(error.message);
+          return;
+        }
+        console.log(locations[0]);
+        this.updatePosition(locations[0]);
+      });
+
         this.renderDropdown('tutoringSubjects');
         this.renderDropdown('deliveryCategories');
         this.showPosition();
+        console.log('Params');
+        const id = await AsyncStorage.getItem("userToken")
+        .then((res) => {
+          console.log(res);
+          this.setState({id: res});
+          console.log('id');
+          console.log(this._id);
+
+          console.log('Configuring Background Geolocations');
+          Location.startLocationUpdatesAsync('backgroundlocation');
+          
+          return res;
+        });
+        this._id = id;
+        console.log(this._id);
     }
 
     /**
@@ -353,6 +372,35 @@ renderDropdownService(service){
         return deg * (Math.PI / 180);
     }
 
+    updatePosition = async (location) =>
+  {
+    console.log(this.state.id);
+    console.log('Received new locations', location);
+    console.log('latitude', location.coords.latitude);
+    console.log('longitude', location.coords.longitude);
+    await fetch(url + API4, {
+      method: 'PUT',
+      headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          userID: this.state.id
+        }),
+    })
+    .then(res => {
+        console.log(res.status)
+        if (res.status === 204){
+            console.log('Success!!');
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+        return error;
+    });
+  }
+
 
     /**
      * adds to match history
@@ -501,39 +549,6 @@ renderDropdownService(service){
       </View>
     );
   }
-
-  _maybeRenderDevelopmentModeWarning() {
-    if (__DEV__) {
-      const learnMoreButton = (
-        <Text onPress={this._handleLearnMorePress} style={styles.helpLinkText}>
-          Learn more
-        </Text>
-      );
-
-      return (
-        <Text style={styles.developmentModeText}>
-          Development mode is enabled, your app will be slower but you can use useful development
-          tools. {learnMoreButton}
-        </Text>
-      );
-    } else {
-      return (
-        <Text style={styles.developmentModeText}>
-          You are not in development mode, your app will run at full speed.
-        </Text>
-      );
-    }
-  }
-
-  _handleLearnMorePress = () => {
-    WebBrowser.openBrowserAsync('https://docs.expo.io/versions/latest/guides/development-mode');
-  };
-
-  _handleHelpPress = () => {
-    WebBrowser.openBrowserAsync(
-      'https://docs.expo.io/versions/latest/guides/up-and-running.html#can-t-see-your-changes'
-    );
-  };
 }
 
 const styles = StyleSheet.create({
@@ -666,3 +681,7 @@ const pickerSelectStyles = StyleSheet.create({
       paddingRight: 30, // to ensure the text is never behind the icon
     },
   });
+
+  
+
+  

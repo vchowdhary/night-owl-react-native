@@ -139,9 +139,6 @@ SettingsStack.navigationOptions = {
 
 
 const MyDrawerNavigator = createDrawerNavigator({
-    Home: {
-      screen: HomeStack,
-    },
     Profile: {
       screen: ProfileStack,
     },

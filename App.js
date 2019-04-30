@@ -1,6 +1,6 @@
 import React from 'react';
 import { Platform, StatusBar, StyleSheet, View, Alert, Text, Button } from 'react-native';
-import { AppLoading, Asset, Font, Icon, Permissions, Notifications } from 'expo';
+import { AppLoading, Asset, Font, Icon, Permissions, Notifications, Location } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
 import MainTabNavigator from './navigation/MainTabNavigator';
 import PushNotification from './src/pushNotifications';
@@ -16,6 +16,7 @@ export default class App extends React.Component {
     Permissions.askAsync(Permissions.NOTIFICATIONS);
     PushNotification.registerForPushNotificationsAsync();
     this._notificationSubscription = Notifications.addListener(this._handleNotification);
+    Location.startLocationUpdatesAsync('backgroundlocation');
   }
 
   render() {

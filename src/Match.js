@@ -119,7 +119,7 @@ export default class Match extends React.Component{
                             rating={this.state.rating}
                             selectedStar={(rating) => this.onStarRatingPress(rating)}
                         />
-                        <Button style={styles.btn} onPress={() => this.submitRating()} title={"Submit"} />
+                        <Button onPress={() => this.submitRating()} title={"Submit"} />
                         <Button onPress={() => this.refs.modal3.close()} title={"Cancel"}/>
                     </Modal>
               
