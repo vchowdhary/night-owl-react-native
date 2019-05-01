@@ -15,8 +15,11 @@ export default class App extends React.Component {
   {
     Permissions.askAsync(Permissions.NOTIFICATIONS);
     PushNotification.registerForPushNotificationsAsync();
+    Expo.Notifications.createChannelAndroidAsync('channel1', {
+      name: 'Default',
+      sound: true,
+    });
     this._notificationSubscription = Notifications.addListener(this._handleNotification);
-    Location.startLocationUpdatesAsync('backgroundlocation');
   }
 
   render() {
@@ -70,9 +73,96 @@ export default class App extends React.Component {
     this.setState({ isLoadingComplete: true });
   };
 
-  _handleNotification = (notification) => {
+
+  _handleNotification = async (notification) => {
+    console.log("Notification:");
     console.log(notification);
     console.log(notification.data);
+    console.log(notification.data.time === 0);
+
+    if(notification.data.prev != null)
+    {
+      console.log(notification.data.prev);
+      console.log("Getting status");
+      await PushNotification.getStatus(notification.data.prev)
+      .then(async (status) => {
+        console.log(status);
+        if(status === null || status === "missed")
+        {
+          var localNotif = {
+            title: notification.data.title, 
+            body: notification.data.message, 
+            data: { from: notification.data.from, 
+                    to: notification.data.to,
+                    id: notification.data.id,
+                    isRequest: notification.data.isRequest,
+                    message: notification.data.message,
+                    next: notification.data.next,
+                    prev: notification.data.prev,
+                    time: 0,
+                    title: notification.data.title }, 
+            android: { 
+              sound: true 
+            }, 
+            ios: { 
+              sound: true 
+            }
+          }
+
+          if(notification.data.time === 0)
+          {
+            console.log('Presenting local notification');
+            //await Notifications.presentLocalNotificationAsync(localNotif);
+            var type = "info";
+            if(notification.data.title === "Match Failed")
+            {
+              type = "error";
+            }
+            else if(notification.data.title === "Request Confirmed" || 
+                    notification.data.title === "Offer Confirmed")
+            {
+              type = "success";
+            }
+
+            console.log(type);
+            console.log(notification.data);
+            this._dropdown.alertWithType(type, notification.data.title, notification.data.message, notification.data, 3000);
+
+          }
+          else{
+            console.log('Scheduling notification');
+            let time = Date.now();
+            const sid = await Notifications.scheduleLocalNotificationAsync(localNotif, {time: time + 5000});
+            console.log('Presenting local notification');
+            /*var type = "info";
+            console.log(notification.data.title);
+            if(notification.data.title === "Match Failed")
+            {
+              type = "error";
+            }
+            else if(notification.data.title === "Request Confirmed" || 
+                    notification.data.title === "Offer Confirmed")
+            {
+              type = "success";
+            }
+
+            console.log(type);
+            console.log(notification.data);
+            this._dropdown.alertWithType(type, notification.data.title, notification.data.message, notification.data, 3000);*/
+            //await Notifications.scheduleLocalNotificationAsync(localNotif, {time: time + 1000});
+          }
+        }
+        else if(status === "rejected" || status === "later")
+        {
+          console.log("Failed! This node should have been deleted!");
+        }
+        else if(status === "done" || status === "accepted")
+        {
+          Notifications.dismissNotificationAsync(notification.data.id);
+          PushNotification.setStatus(notification.data.id, "done");
+        }
+    });
+    /*
     if(notification.data.type === 'match_request')
     {
       var message = "New match request from: " + notification.data.from_id;
@@ -98,18 +188,24 @@ export default class App extends React.Component {
     else{
       console.log('Type not match');
       this._dropdown.alertWithType('info', 'Look', notification.data.message, notification.data, 3000);
-    }
-  };
+    }*/
+  }
+  
+}
 
   _acceptMatch = (data) => {
-    PushNotification.setStatus(data.payload, "accepted");
+    console.log(data.payload.id);
+    console.log("Setting status");
+    PushNotification.setStatus(data.payload.id, "accepted");
     this._dropdown.alertWithType('info', 'Match confirmed!', 'Please rate your match at the Inbox page!', null, 3000);
+    
   }
 
   _onClose = (data) => {
-    console.log(data.payload.type === 'match_request_confirmed');
-    console.log(data.title === 'Request Confirmed');
-    if (data.payload.type === 'match_request')
+    console.log('Drop down closed');
+    console.log(data);
+    console.log(data.payload.title === 'Request Confirmed');
+    if (data.payload.title === 'Match Request')
     {
       if(data.action === 'tap')
       {
@@ -118,10 +214,10 @@ export default class App extends React.Component {
             'Match Request',
             data.payload.message,
             [
-              {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload, 'later')},
+              {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload.id, 'later')},
               {
                 text: 'No',
-                onPress: () => PushNotification.setStatus(data.payload, 'rejected'),
+                onPress: () => PushNotification.setStatus(data.payload.id, 'rejected'),
                 style: 'cancel',
               },
               {text: 'Yes', onPress: () => this._acceptMatch(data)},
@@ -132,14 +228,14 @@ export default class App extends React.Component {
       if(data.action === 'automatic')
       {
         console.log('Missed match request');
-        PushNotification.setStatus(data.payload, 'missed');
+        PushNotification.setStatus(data.payload.id, 'missed');
       }
       if(data.action === 'pan' || data.action === 'cancel'){
         console.log('Panned match request');
-        PushNotification.setStatus(data.payload, 'later');
+        PushNotification.setStatus(data.payload.id, 'later');
       }
     }
-    else if(data.payload.type === "match_request_confirmed" && data.title === "Request Confirmed")
+    else if(data.payload.title === "Request Confirmed")
     {
       console.log(data.action);
       if(data.action === "tap")
@@ -150,7 +246,7 @@ export default class App extends React.Component {
         //Navigate to inbox here
       }
     }
-    else if (data.payload.type === 'match_offer')
+    else if (data.payload.title === 'Match Offer')
     {
       if(data.action === 'tap')
       {
@@ -159,10 +255,10 @@ export default class App extends React.Component {
             'Match Offer',
             data.payload.message,
             [
-              {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload, 'later')},
+              {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload.id, 'later')},
               {
                 text: 'No',
-                onPress: () => PushNotification.setStatus(data.payload, 'rejected'),
+                onPress: () => PushNotification.setStatus(data.payload.id, 'rejected'),
                 style: 'cancel',
               },
               {text: 'Yes', onPress: () => this._acceptMatch(data)},
@@ -173,11 +269,11 @@ export default class App extends React.Component {
       if(data.action === 'automatic')
       {
         console.log('Missed match offer');
-        PushNotification.setStatus(data.payload, 'missed');
+        PushNotification.setStatus(data.payload.id, 'missed');
       }
       if(data.action === 'pan' || data.action === 'cancel'){
         console.log('Panned match offer');
-        PushNotification.setStatus(data.payload, 'later');
+        PushNotification.setStatus(data.payload.id, 'later');
       }
     }
   }
@@ -185,9 +281,7 @@ export default class App extends React.Component {
   _onCancel = (data) => {
     console.log("Cancelled");
     console.log(data);
-    
   }
-
 }
 
 const styles = StyleSheet.create({

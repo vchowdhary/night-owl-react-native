@@ -86,7 +86,25 @@ export default class PushNotification {
         }
     }
 
-    static async setStatus(notification, status){
+    static async getStatus(id){
+        console.log("Getting status - push notification");
+        console.log(id);
+
+        return await fetch(url + API3 + '?id=' + id + '&type=getStatus',
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+          }
+        })
+        .then((res) => 
+        {
+           console.log(res);
+           return JSON.parse(res._bodyText);  
+        });
+    }
+
+    static async setStatus(id, status){
         console.log("Change status");
         console.log(status);
         await fetch(url + API3, {
@@ -96,13 +114,8 @@ export default class PushNotification {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                id: notification.match_notif_id,
-                status: status,
-                match_id: notification.to_id,
-                attempt: notification.attempt,
-                request: notification.req,
-                match_number: notification.matchID,
-                isRequest: notification.isRequest,
+                id: id,
+                status: status
             }),
         })
         .then((res) =>
@@ -110,5 +123,10 @@ export default class PushNotification {
             console.log(res.status);
             console.log(res._bodyText);
         });
+    }
+
+    static async cancel(id)
+    {
+       await Notifications.cancelScheduledNotificationAsync(sid);
     }
 }
