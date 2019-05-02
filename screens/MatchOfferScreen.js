@@ -234,7 +234,6 @@ renderDropdownService(service){
             ...pickerSelectStyles,
             placeholder: {
               color: 'gray',
-              fontSize: 12,
               fontWeight: 'bold',
             },
           }}
@@ -252,7 +251,6 @@ renderDropdownService(service){
               ...pickerSelectStyles,
               placeholder: {
                 color: 'gray',
-                fontSize: 12,
                 fontWeight: 'bold',
               },
             }}
@@ -270,7 +268,6 @@ renderDropdownService(service){
                 ...pickerSelectStyles,
                 placeholder: {
                   color: 'gray',
-                  fontSize: 12,
                   fontWeight: 'bold',
                 },
               }}
@@ -462,7 +459,6 @@ renderDropdownService(service){
                 ...pickerSelectStyles,
                 placeholder: {
                   color: 'gray',
-                  fontSize: 12,
                   fontWeight: 'bold',
                 }
         }}/>

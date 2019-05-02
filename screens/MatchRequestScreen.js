@@ -33,6 +33,7 @@ const API3 = '/api/subjects';
 const API2 = '/api/history/';
 const API = '/api/match/';
 const API4 = '/api/locationtracking/';
+const API5 = '/api/statuses';
 
 export default class MatchRequestScreen extends React.Component {
   constructor(props){
@@ -118,6 +119,7 @@ export default class MatchRequestScreen extends React.Component {
         });
         this._id = id;
         console.log(this._id);
+        
     }
 
     /**
@@ -131,6 +133,8 @@ export default class MatchRequestScreen extends React.Component {
         this.setState({ [key]: value });
         //console.log(this.state);
     }
+
+   
 
 
 /**

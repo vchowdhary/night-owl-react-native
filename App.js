@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, StatusBar, StyleSheet, View, Alert, Text, Button } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View, Alert, Text, Button, AppState, AsyncStorage } from 'react-native';
 import { AppLoading, Asset, Font, Icon, Permissions, Notifications, Location } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
 import MainTabNavigator from './navigation/MainTabNavigator';
@@ -18,8 +18,10 @@ export default class App extends React.Component {
     Expo.Notifications.createChannelAndroidAsync('channel1', {
       name: 'Default',
       sound: true,
+      priority: 'max',
     });
     this._notificationSubscription = Notifications.addListener(this._handleNotification);
+    AppState.addEventListener('change', this._handleAppStateChange);
   }
 
   render() {
@@ -80,88 +82,91 @@ export default class App extends React.Component {
     console.log(notification.data);
     console.log(notification.data.time === 0);
 
-    if(notification.data.prev != null)
+    if(notification.data.time === 0)
     {
-      console.log(notification.data.prev);
-      console.log("Getting status");
-      await PushNotification.getStatus(notification.data.prev)
-      .then(async (status) => {
-        console.log(status);
-        if(status === null || status === "missed")
-        {
-          var localNotif = {
-            title: notification.data.title, 
-            body: notification.data.message, 
-            data: { from: notification.data.from, 
-                    to: notification.data.to,
-                    id: notification.data.id,
-                    isRequest: notification.data.isRequest,
-                    message: notification.data.message,
-                    next: notification.data.next,
-                    prev: notification.data.prev,
-                    time: 0,
-                    title: notification.data.title }, 
-            android: { 
-              sound: true 
-            }, 
-            ios: { 
-              sound: true 
-            }
-          }
+      if(notification.data.title === "Match Failed" || 
+         notification.data.title === "Request Confirmed" ||
+         notification.data.title === "Offer Confirmed")
+      {
+        var type = "info";
+              if(notification.data.title === "Match Failed")
+              {
+                type = "error";
+              }
+              else if(notification.data.title === "Request Confirmed" || 
+                      notification.data.title === "Offer Confirmed")
+              {
+                type = "success";
+              }
 
-          if(notification.data.time === 0)
+              console.log(type);
+              console.log(notification.data);
+              this._dropdown.alertWithType(type, notification.data.title, notification.data.message, notification.data, 3000);
+      }
+      else
+      {
+          if(notification.data.prev != null)
           {
-            console.log('Presenting local notification');
-            //await Notifications.presentLocalNotificationAsync(localNotif);
-            var type = "info";
-            if(notification.data.title === "Match Failed")
-            {
-              type = "error";
-            }
-            else if(notification.data.title === "Request Confirmed" || 
-                    notification.data.title === "Offer Confirmed")
-            {
-              type = "success";
-            }
-
-            console.log(type);
-            console.log(notification.data);
-            this._dropdown.alertWithType(type, notification.data.title, notification.data.message, notification.data, 3000);
-
-          }
-          else{
-            console.log('Scheduling notification');
-            let time = Date.now();
-            const sid = await Notifications.scheduleLocalNotificationAsync(localNotif, {time: time + 5000});
-            console.log('Presenting local notification');
-            /*var type = "info";
-            console.log(notification.data.title);
-            if(notification.data.title === "Match Failed")
-            {
-              type = "error";
-            }
-            else if(notification.data.title === "Request Confirmed" || 
-                    notification.data.title === "Offer Confirmed")
-            {
-              type = "success";
-            }
-
-            console.log(type);
-            console.log(notification.data);
-            this._dropdown.alertWithType(type, notification.data.title, notification.data.message, notification.data, 3000);*/
-            //await Notifications.scheduleLocalNotificationAsync(localNotif, {time: time + 1000});
-          }
+            console.log(notification.data.prev);
+            console.log("Getting status");
+            await PushNotification.getStatus(notification.data.prev)
+            .then(async (status) => {
+              console.log(status);
+              if(status === null || status === "missed")
+              {
+                  console.log('Presenting local notification');
+                  //await Notifications.presentLocalNotificationAsync(localNotif);
+                  var type = "info";
+                  console.log(type);
+                  console.log(notification.data);
+                  this._dropdown.alertWithType(type, notification.data.title, notification.data.message, notification.data, 3000);
+                  
+              }
+              else if(status === "rejected" || status === "later")
+              {
+                console.log("Failed! This node should have been deleted!");
+              }
+              else if(status === "done" || status === "accepted")
+              {
+                PushNotification.setStatus(notification.data.id, "done");
+              }
+          });
         }
-        else if(status === "rejected" || status === "later")
-        {
-          console.log("Failed! This node should have been deleted!");
+        else{
+          console.log('Presenting local notification');
+                  //await Notifications.presentLocalNotificationAsync(localNotif);
+          var type = "info";
+          console.log(type);
+          console.log(notification.data);
+          this._dropdown.alertWithType(type, notification.data.title, notification.data.message, notification.data, 3000);
         }
-        else if(status === "done" || status === "accepted")
-        {
-          Notifications.dismissNotificationAsync(notification.data.id);
-          PushNotification.setStatus(notification.data.id, "done");
-        }
-    });
+      }
+    }
+  else{
+    let time = Date.now();
+    console.log('Scheduling local notification');
+    var localNotif = {
+      title: notification.data.title, 
+      body: notification.data.message, 
+      data: { from: notification.data.from, 
+              to: notification.data.to,
+              id: notification.data.id,
+              isRequest: notification.data.isRequest,
+              message: notification.data.message,
+              next: notification.data.next,
+              prev: notification.data.prev,
+              time: 0,
+              title: notification.data.title }, 
+      android: { 
+        sound: true 
+      }, 
+      ios: { 
+        sound: true 
+      }
+    }
+    const sid = await Notifications.scheduleLocalNotificationAsync(localNotif, {time: time + 6000});
+    
+  }
     /*
     if(notification.data.type === 'match_request')
     {
@@ -189,9 +194,31 @@ export default class App extends React.Component {
       console.log('Type not match');
       this._dropdown.alertWithType('info', 'Look', notification.data.message, notification.data, 3000);
     }*/
-  }
   
 }
+
+_handleAppStateChange = async (nextAppState) => {
+  const id = await AsyncStorage.getItem("userToken")
+  .then(async (res) => {
+    console.log(res);
+    if (res != null)
+    {
+      await fetch(url + API5, 
+        {
+          method: 'PUT',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: {
+            id: res,
+            status: nextAppState
+          }
+        });
+    }
+  });
+  
+};
 
   _acceptMatch = (data) => {
     console.log(data.payload.id);
