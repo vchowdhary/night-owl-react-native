@@ -82,20 +82,16 @@ export default class MatchRequestScreen extends React.Component {
     });
   }
 
-  
-  async componentDidMount(){
-    console.log('Params');
-    const id = await AsyncStorage.getItem("userToken");
-    console.log(id);
-    this._id = id;
-    console.log('id');
-    console.log(this._id);
-  }
-
   /**
      * runs when component will mount
      */
     async componentWillMount(){
+        console.log('Params');
+        const id = await AsyncStorage.getItem("userToken");
+        console.log(id);
+        this._id = id;
+        console.log('id');
+        console.log(this._id);
         this.renderDropdown('tutoringSubjects');
         this.renderDropdown('deliveryCategories');
         this.showPosition();

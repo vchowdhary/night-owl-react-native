@@ -112,7 +112,7 @@ export default class App extends React.Component {
             await PushNotification.getStatus(notification.data.prev)
             .then(async (status) => {
               console.log(status);
-              if(status === null || status === "missed")
+              if(status === null || status === "missed" || status === "rejected" || status === "later")
               {
                   console.log('Presenting local notification');
                   //await Notifications.presentLocalNotificationAsync(localNotif);
@@ -121,10 +121,6 @@ export default class App extends React.Component {
                   console.log(notification.data);
                   this._dropdown.alertWithType(type, notification.data.title, notification.data.message, notification.data, 3000);
                   
-              }
-              else if(status === "rejected" || status === "later")
-              {
-                console.log("Failed! This node should have been deleted!");
               }
               else if(status === "done" || status === "accepted")
               {
