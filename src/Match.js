@@ -13,24 +13,42 @@ import {
 import { WebBrowser } from 'expo';
 import {Button, Label, Input, Text, Slider} from 'react-native-elements';
 import Modal from 'react-native-modalbox';
+import Geocoder from 'react-native-geocoding';
 
 import config from '../config';
 
 const url = config.url;
 const API = '/api/history/';
 
+Geocoder.init('AIzaSyBfxlrjGDrdWc8Ycg9WA9dAi5bJcEuO1_g');
+ 
+var options = {
+  provider: 'google',
+ 
+  // Optional depending on the providers
+  httpAdapter: 'https', // Default
+  apiKey: 'AIzaSyBfxlrjGDrdWc8Ycg9WA9dAi5bJcEuO1_g', // for Mapquest, OpenCage, Google Premier
+  formatter: null         // 'gpx', 'string', ...
+};
+
 export default class Match extends React.Component{
     constructor(props)
     {
         super(props);
+        console.log("constructor");
 
         this.state={
-            rating: 1
+            rating: 1,
+            location: null,
+            dropOffLocation: null
         };
+
+
 
         ['rateRequest',
         'onStarRatingPress',
-        'submitRating']
+        'submitRating',
+        'setLocations',]
     .forEach(key => {
         this[key] = this[key].bind(this);
     });
@@ -42,7 +60,40 @@ export default class Match extends React.Component{
       console.log(matchID);
     }
 
-    
+    async componentDidMount()
+    {
+      await this.setLocations();
+    }
+
+    async setLocations()
+    {
+      console.log("Setting locations...");
+      const location = await Geocoder.from(this.props.data.location)
+                            .then(function(res) {
+                                console.log(res.results[0]["formatted_address"]);
+                                return res.results[0]["formatted_address"];
+                            })
+                            .catch(function(err) {
+                                console.log(err);
+                            });
+      this.setState({location: location});
+      var dropOffLocation = null;
+      console.log(this.props.data.service_type);
+      if(this.props.data.service_type === 'delivery')
+      {
+         dropOffLocation = await Geocoder.from(this.props.data.dropOffLocation)
+          .then(function(res) {
+            console.log(res.results[0]["formatted_address"]);
+            return res.results[0]["formatted_address"];
+          })
+          .catch(function(err) {
+              console.log(err);
+          });
+        
+          this.setState({dropOffLocation: dropOffLocation});
+      }
+    }
+
 
     onStarRatingPress(rating) {
         this.setState({
@@ -72,7 +123,10 @@ export default class Match extends React.Component{
 
     render()
     {
-        console.log('Rendering');
+      console.log('Changing location');
+      console.log(this.props.data.location);
+      
+      console.log('Rendering match');
       console.log(this.props.data);
       return (<View style={styles.matchContainer}>
                     <Text style={styles.biglabelText}>{this.props.type === 'request' ? 'REQUEST' : 'OFFER'}</Text>
@@ -108,8 +162,18 @@ export default class Match extends React.Component{
                             <Text> { this.props.data.subject_3} </Text>
                         </View>
                     :   null}
-                    <Text style={styles.labelText}> Location: </Text>
-                    <Text> {this.props.data.location.lat + ', ' + this.props.data.location.lng} </Text>
+                    {(this.props.data.service_type === "tutoring") ?
+                      <View>
+                        <Text style={styles.labelText}> Location: </Text>
+                        <Text>{this.state.location}</Text>
+                      </View> :
+                      <View>
+                        <Text style={styles.labelText}> Location: </Text>
+                        <Text>{this.state.location}</Text>
+                        <Text style={styles.labelText}> Drop-off Location: </Text>
+                        <Text>{this.state.dropOffLocation}</Text>
+                      </View>
+                    }
                     <Button onPress={() => { this.rateRequest(this.props.data.id)}} title={"Rate This Match"} />
                     <Modal style={styles.modal3} position={"center"} ref={"modal3"}>
                         <Text style={styles.labelText}> Rate your match </Text>
@@ -122,10 +186,8 @@ export default class Match extends React.Component{
                         <Button onPress={() => this.submitRating()} title={"Submit"} />
                         <Button onPress={() => this.refs.modal3.close()} title={"Cancel"}/>
                     </Modal>
-              
               </View>
-              
-              );
+            );
     }
 }
 
