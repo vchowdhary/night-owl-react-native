@@ -414,7 +414,7 @@ renderDropdownService(service){
     
    async pushToDatabase(name, service){
      console.log('Pushing subjects');
-     await fetch(url + API, {
+     await fetch(url + API3, {
          method: 'PUT',
          headers: {
            Accept: 'application/json',

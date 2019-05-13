@@ -1,5 +1,5 @@
 import React from 'react';
-import { Location, TaskManager } from 'expo';
+import { Location, TaskManager, Notifications } from 'expo';
 import {
     Image,
     Platform,
@@ -34,6 +34,7 @@ const API2 = '/api/history/';
 const API = '/api/match/';
 const API4 = '/api/locationtracking/';
 const API5 = '/api/statuses';
+const APIUsers = '/api/users';
 
 export default class MatchRequestScreen extends React.Component {
   constructor(props){
@@ -64,7 +65,8 @@ export default class MatchRequestScreen extends React.Component {
             lng: 0
         },
         markers: [{ id: 'currpos', lat: -1, lng: -1, color: 'blue' }],
-        
+        profile: {},
+        offers: true,
     };
 
     ['renderDropdown',
@@ -80,7 +82,8 @@ export default class MatchRequestScreen extends React.Component {
     'addMatchToRecords',
     'pushToDatabase',
     'onMarkerPositionChanged',
-     'updatePosition']
+     'updatePosition',
+    'makeDeliveryOffer']
     .forEach(key => {
         this[key] = this[key].bind(this);
     });
@@ -106,14 +109,35 @@ export default class MatchRequestScreen extends React.Component {
         this.showPosition();
         console.log('Params');
         const id = await AsyncStorage.getItem("userToken")
-        .then((res) => {
+        .then(async (res) => {
           console.log(res);
           this.setState({id: res});
           console.log('id');
           console.log(this._id);
 
           console.log('Configuring Background Geolocations');
-          Location.startLocationUpdatesAsync('backgroundlocation');
+          Location.startLocationUpdatesAsync('backgroundlocation', {
+            distanceInterval: 1,
+            showsBackgroundLocationIndicator: true,
+          });
+
+          console.log('Getting user profile');
+          const reqURL = url + `/api/users/${encodeURIComponent(res)}`;
+          await fetch(reqURL, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+          .then((res) =>{
+            console.log(res.status);
+            if(res.status === 200 || res.status === 201 || res.status === 204)
+            {
+              console.log('Success');
+              console.log(JSON.parse(res._bodyText));
+              this.setState({profile: JSON.parse(res._bodyText)});
+            }
+          });    
           
           return res;
         });
@@ -133,9 +157,6 @@ export default class MatchRequestScreen extends React.Component {
         this.setState({ [key]: value });
         //console.log(this.state);
     }
-
-   
-
 
 /**
      * Gets and sets current position
@@ -353,6 +374,7 @@ renderDropdownService(service){
           .then(function(res){
               if(res.status == 200 || res.status == 201 || res.status == 204){
                   console.log('SUCCESS GETTING MATCHES');
+                  return res._bodyText;
               }
           });  
         });     
@@ -376,8 +398,14 @@ renderDropdownService(service){
         return deg * (Math.PI / 180);
     }
 
+    async makeDeliveryOffer(places) {
+      console.log(places);
+      this.setState({offers: false});
+    }
+
     updatePosition = async (location) =>
   {
+    console.log('Updated position');
     console.log(this.state.id);
     console.log('Received new locations', location);
     console.log('latitude', location.coords.latitude);
@@ -403,7 +431,49 @@ renderDropdownService(service){
         console.log(error);
         return error;
     });
+
+    //https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=1500&type=restaurant&keyword=cruise&key=AIzaSyBfxlrjGDrdWc8Ycg9WA9dAi5bJcEuO1_g
+    if(this.state.profile.delivery["Food"] !== null && this.state.offers)
+    {
+      console.log(this.state.profile.delivery["Food"]);
+      console.log(this.state.profile.delivery['timetopickup']);
+      const distance = 100 * this.state.profile.delivery['timetopickup'];
+      console.log(distance);
+
+      const places_url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + 
+                          this.state.currentLatLng.lat +',' + this.state.currentLatLng.lng +
+                          '&radius='+distance+
+                          '&type=restaurant&opennow&fields=name,geometry/location&key=AIzaSyBfxlrjGDrdWc8Ycg9WA9dAi5bJcEuO1_g';
+      await fetch(places_url)
+      .then(async (res) =>
+      {
+          let result = JSON.parse(res._bodyText);
+          console.log(result.results);
+          if(JSON.parse(res._bodyText) !== [])
+          {
+            var localNotif = {
+              title: "Would you like to make an offer for delivery?", 
+              body: "We've detected that you're close to several restaurants and have expressed an interest in delivering food.", 
+              data: { 
+                      to: this.state.id,
+                      places: result.results,
+                      message: "We've detected that you're close to several restaurants and have expressed an interest in delivering food.",
+                      time: 0,
+                      title: "Would you like to make an offer for delivery?"
+                    }, 
+              android: { 
+                sound: true 
+              }, 
+              ios: { 
+                sound: true 
+              }
+            }
+            await Notifications.presentLocalNotificationAsync(localNotif);
+        }
+      });
+    
   }
+}
 
 
     /**
@@ -457,7 +527,7 @@ renderDropdownService(service){
     
    async pushToDatabase(name, service){
      console.log('Pushing subjects');
-     await fetch(url + API, {
+     await fetch(url + API3, {
          method: 'PUT',
          headers: {
            Accept: 'application/json',

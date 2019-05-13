@@ -50,7 +50,7 @@ export default class PushNotification {
             .then((token) => {
             console.log("token");
             console.log(token);
-            Alert.alert(token);
+            //Alert.alert(token);
             return token;
             });
             
