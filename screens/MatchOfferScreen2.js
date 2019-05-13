@@ -1,5 +1,5 @@
 import React from 'react';
-import { Location, TaskManager } from 'expo';
+import { WebBrowser } from 'expo';
 import {
     Image,
     Platform,
@@ -32,19 +32,16 @@ const url = config.url;
 const API3 = '/api/subjects';
 const API2 = '/api/history/';
 const API = '/api/match/';
-const API4 = '/api/locationtracking/';
-const API5 = '/api/statuses';
 
 export default class MatchRequestScreen extends React.Component {
   constructor(props){
     super(props);
 
     this.state = {
-        id: '', 
         profile: {},
         loading: false,
         redirect: false,
-        request: { 
+        offer: { 
             type: 'tutoring', 
             subject_1: '',
             subject_2: '',
@@ -57,8 +54,8 @@ export default class MatchRequestScreen extends React.Component {
         selectedsubject: '',
         newTutoringSubject: '',
         newDeliveryCategory: '',
-        tutoringSubjects: [],
-        deliveryCategories: [],
+        tutoringSubjects: {},
+        deliveryCategories: {},
         currentLatLng: {
             lat: 0,
             lng: 0
@@ -85,26 +82,19 @@ export default class MatchRequestScreen extends React.Component {
     });
   }
 
-
   /**
      * runs when component will mount
      */
     async componentWillMount(){
+        console.log('Params');
+        const id = await AsyncStorage.getItem("userToken");
+        console.log(id);
+        this._id = id;
+        console.log('id');
+        console.log(this._id);
         this.renderDropdown('tutoringSubjects');
         this.renderDropdown('deliveryCategories');
         this.showPosition();
-        console.log('Params');
-        const id = await AsyncStorage.getItem("userToken")
-        .then((res) => {
-          console.log(res);
-          this.setState({id: res});
-          console.log('id');
-          console.log(this._id);
-          return res;
-        });
-        this._id = id;
-        console.log(this._id);
-        
     }
 
     /**
@@ -118,6 +108,7 @@ export default class MatchRequestScreen extends React.Component {
         this.setState({ [key]: value });
         //console.log(this.state);
     }
+
 
 /**
      * Gets and sets current position
@@ -154,7 +145,7 @@ export default class MatchRequestScreen extends React.Component {
     
         var subjects = service === "tutoring" ? "tutoringSubjects" : "deliveryCategories";
         
-        if (this.state.request['subject_1']=== "Other" || this.state.request['subject_2']=== "Other" || this.state.request['subject_3']=== "Other"){
+        if (this.state.offer['subject_1']=== "Other" || this.state.offer['subject_2']=== "Other" || this.state.offer['subject_3']=== "Other"){
           this.pushToDatabase(this.state[[newsubject]], service);
           subjects.push({label: this.state[[newsubject]], value: this.state[[newsubject]]})
         }
@@ -217,7 +208,7 @@ addMarker(){
 
 renderDropdownService(service){
     const placeholder = {
-      label: 'Select a subject...',
+      label: service === "tutoring" ? 'Select a subject...' : 'Select a category...',
       value: null,
       color: '#9EA0A4',
     };
@@ -233,7 +224,7 @@ renderDropdownService(service){
           items={this.state[[items]]}
           onValueChange={value => {
             this.requestChange('subject_1', value)
-            console.log(this.state);
+            //console.log(this.state);
           }}
           style={{
             ...pickerSelectStyles,
@@ -247,7 +238,7 @@ renderDropdownService(service){
         <RNPickerSelect
             placeholder={placeholder}
             items={this.state[[items]]}
-            disabled={this.state.request.type === 'delivery'}
+            disabled={this.state.offer.type === 'delivery'}
             onValueChange={value => {
               this.requestChange('subject_2', value)
               //console.log(this.state);
@@ -264,7 +255,7 @@ renderDropdownService(service){
           <RNPickerSelect
               placeholder={placeholder}
               items={this.state[[items]]}
-              disabled={this.state.request.type === 'delivery'}
+              disabled={this.state.offer.type === 'delivery'}
               onValueChange={value => {
                 this.requestChange('subject_3', value)
                 //console.log(this.state);
@@ -273,7 +264,6 @@ renderDropdownService(service){
                 ...pickerSelectStyles,
                 placeholder: {
                   color: 'gray',
-                  fontSize: 12,
                   fontWeight: 'bold',
                 },
               }}
@@ -288,7 +278,7 @@ renderDropdownService(service){
         if(value === 'delivery'){
             console.log('delivery');
             this.addMarker();
-            this.state.request.timetodeliver = 0;
+            this.state.offer.timetodeliver = 0;
         }
         else{
             if(this.state.markers.length === 2){
@@ -296,7 +286,7 @@ renderDropdownService(service){
             }
         }
     }
-    var requestobj = this.state.request;
+    var requestobj = this.state.offer;
     var obj = { request: requestobj };
     requestobj[key] = value;
 
@@ -312,34 +302,34 @@ renderDropdownService(service){
         //console.log(this.state.request);
         
         if (this.state.markers.length === 2){
-            this.state.request.timetodeliver = await this.calculateDistance(this.state.markers[0].lat, this.state.markers[0].lng, this.state.markers[1].lat, this.state.markers[1].lng);
-            this.state.request.dropofflocation = { lat: this.state.markers[1].lat, lng: this.state.markers[1].lng };
+            this.state.offer.timetodeliver = await this.calculateDistance(this.state.markers[0].lat, this.state.markers[0].lng, this.state.markers[1].lat, this.state.markers[1].lng);
+            this.state.offer.dropofflocation = { lat: this.state.markers[1].lat, lng: this.state.markers[1].lng };
         }
         else{
-            this.state.request.timetodeliver = 0;
-            this.state.request.dropofflocation = {};
+            this.state.offer.timetodeliver = 0;
+            this.state.offer.dropofflocation = {};
 
         }
 
-        this.state.request.location = { lat: this.state.markers[0].lat, lng: this.state.markers[0].lng };
+        this.state.offer.location = { lat: this.state.markers[0].lat, lng: this.state.markers[0].lng };
 
-        await this.addMatchToRecords(this.state.request, false)
+        await this.addMatchToRecords(this.state.offer, false)
         .then(async (matchID) => {
-          console.log("Match ID");
           console.log(matchID);
 
           console.log("Getting matches");
-          await fetch(url + API + '?limit=' + 5 + '&offer=' + JSON.stringify(this.state.request) + '&matchID=' + matchID + '&provider_id=' + this._id,
+          await fetch(url + API + '?limit=' + 5 + '&offer=' + JSON.stringify(this.state.offer) + '&matchID=' + matchID + '&provider_id=' + this._id,
           {
               method: 'GET'
           })
-          .then(function(res){
+          .then((res) => {
               if(res.status == 200 || res.status == 201 || res.status == 204){
                   console.log('SUCCESS GETTING MATCHES');
-                  return res._bodyText;
+                  console.log(res._bodyText);
+              
               }
-          });  
-        });     
+          });
+        });    
     }
 
     calculateDistance(lat1, lon1, lat2, lon2){
@@ -371,7 +361,7 @@ renderDropdownService(service){
         console.log('Adding match to records');
         if (isRequest)
         {
-            const result = await fetch(url + API2, {
+            await fetch(url + API2, {
                 method: 'PUT',
                 headers: {
                     Accept: 'application/json',
@@ -386,12 +376,10 @@ renderDropdownService(service){
                     console.log(res._bodyText);
                     return res._bodyText;
                 }
-            });
-            console.log(result);
-            return result;
+            })
         }
         else{
-          const result =  await fetch(url + API2, {
+            const result = await fetch(url + API2, {
                 method: 'PUT',
                 headers: {
                     Accept: 'application/json',
@@ -470,21 +458,21 @@ renderDropdownService(service){
                   fontWeight: 'bold',
                 }
         }}/>
-        <Text style={styles.labelText}>{this.state.request.type === 'tutoring' ? 'What subject are you offering help with?' : 'What are you offering to deliver?'} </Text>
-        {this.state.request.type === 'tutoring' ? this.renderDropdownService('tutoring') : this.renderDropdownService('delivery')}
+        <Text style={styles.labelText}>{this.state.offer.type === 'tutoring' ? 'What subject are you offering help with?' : 'What are you offering to deliver?'} </Text>
+        {this.state.offer.type === 'tutoring' ? this.renderDropdownService('tutoring') : this.renderDropdownService('delivery')}
         <Input 
             style={styles.input}
-            onChangeText={(value) => { this.state.request.type === 'tutoring' ? this.setState({newTutoringSubject: value}) : this.setState({newDeliveryCategory: value})}}
-            value={this.state.request.type === 'tutoring' ? this.state.newTutoringSubject : this.state.newDeliveryCategory}
-            label={this.state.request.type === 'tutoring' ? "NEW SUBJECT" : 'NEW CATEGORY'}
+            onChangeText={(value) => { this.state.offer.type === 'tutoring' ? this.setState({newTutoringSubject: value}) : this.setState({newDeliveryCategory: value})}}
+            value={this.state.offer.type === 'tutoring' ? this.state.newTutoringSubject : this.state.newDeliveryCategory}
+            label={this.state.offer.type === 'tutoring' ? "NEW SUBJECT" : 'NEW CATEGORY'}
             editable={this.state.selectedsubject === "Other"}
           />
-          <Button onPress={() => { this.addItem("tutoring") }} title={this.state.request.type === 'tutoring' ? "Add Subject" : "Add Category"} />
+          <Button onPress={() => { this.addItem("tutoring") }} title={this.state.offer.type === 'tutoring' ? "Add Subject" : "Add Category"} />
           <Input
               style={styles.input}
               onChangeText={(value) => { this.requestChange('details', value)}}
               label={"ADDITIONAL DETAILS"}/>
-           <Text style={styles.biglabelText}>{this.state.request.type === 'delivery' ? 'Please select where you are delivering your items (red marker) and where you are picking them up (blue marker).' : 'Please select where you will be tutoring.'}</Text>
+           <Text style={styles.biglabelText}>{this.state.offer.type === 'delivery' ? 'Please select where you are delivering your items (red marker) and where you are picking them up (blue marker).' : 'Please select where you will be tutoring.'}</Text>
            <MapView
                 style={styles.map}
                 region={{
@@ -496,7 +484,7 @@ renderDropdownService(service){
                 provider={PROVIDER_GOOGLE}
             >
                 {this.state.markers.map((marker, index) => (
-                  <MapView.Marker key={index} draggable
+                  <MapView.Marker draggable
                     coordinate={{latitude: marker.lat, longitude: marker.lng}}
                     pinColor={marker.color}
                     onDragEnd={(e) => this.onMarkerPositionChanged(e.nativeEvent.coordinate, index)}
@@ -642,6 +630,3 @@ const pickerSelectStyles = StyleSheet.create({
       paddingRight: 30, // to ensure the text is never behind the icon
     },
   });
-
-  
-

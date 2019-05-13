@@ -84,6 +84,7 @@ export default class App extends React.Component {
 
     if(notification.data.time === 0)
     {
+      console.log(notification.data.title);
       if(notification.data.title === "Match Failed" || 
          notification.data.title === "Request Confirmed" ||
          notification.data.title === "Offer Confirmed")
@@ -216,10 +217,13 @@ _handleAppStateChange = async (nextAppState) => {
   
 };
 
-  _acceptMatch = (data) => {
+  _acceptMatch = async (data) => {
     console.log(data.payload.id);
     console.log("Setting status");
     PushNotification.setStatus(data.payload.id, "accepted");
+    await Notifications.dismissAllNotificationsAsync().then((data) => {
+      console.log("Dismissed!");
+    });
     this._dropdown.alertWithType('info', 'Match confirmed!', 'Please rate your match at the Inbox page!', null, 3000);
     
   }
@@ -227,76 +231,78 @@ _handleAppStateChange = async (nextAppState) => {
   _onClose = (data) => {
     console.log('Drop down closed');
     console.log(data);
-    console.log(data.payload.title === 'Request Confirmed');
-    if (data.payload.title === 'Match Request')
+    if(data.payload != null)
     {
-      if(data.action === 'tap')
+      if (data.payload.title === 'Match Request')
       {
-        console.log('Tapped match request');
-          Alert.alert(
-            'Match Request',
-            data.payload.message,
-            [
-              {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload.id, 'later')},
-              {
-                text: 'No',
-                onPress: () => PushNotification.setStatus(data.payload.id, 'rejected'),
-                style: 'cancel',
-              },
-              {text: 'Yes', onPress: () => this._acceptMatch(data)},
-            ],
-            {cancelable: false},
-          );
+        if(data.action === 'tap')
+        {
+          console.log('Tapped match request');
+            Alert.alert(
+              'Match Request',
+              data.payload.message,
+              [
+                {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload.id, 'later')},
+                {
+                  text: 'No',
+                  onPress: () => PushNotification.setStatus(data.payload.id, 'rejected'),
+                  style: 'cancel',
+                },
+                {text: 'Yes', onPress: () => this._acceptMatch(data)},
+              ],
+              {cancelable: false},
+            );
+        }
+        if(data.action === 'automatic')
+        {
+          console.log('Missed match request');
+          PushNotification.setStatus(data.payload.id, 'missed');
+        }
+        if(data.action === 'pan' || data.action === 'cancel'){
+          console.log('Panned match request');
+          PushNotification.setStatus(data.payload.id, 'later');
+        }
       }
-      if(data.action === 'automatic')
+      else if(data.payload.title === "Request Confirmed")
       {
-        console.log('Missed match request');
-        PushNotification.setStatus(data.payload.id, 'missed');
+        console.log(data.action);
+        if(data.action === "tap")
+        {
+          console.log("Going to inbox");
+          console.log(this._navigator);
+          this._navigator.navigate('Inbox');
+          //Navigate to inbox here
+        }
       }
-      if(data.action === 'pan' || data.action === 'cancel'){
-        console.log('Panned match request');
-        PushNotification.setStatus(data.payload.id, 'later');
-      }
-    }
-    else if(data.payload.title === "Request Confirmed")
-    {
-      console.log(data.action);
-      if(data.action === "tap")
+      else if (data.payload.title === 'Match Offer')
       {
-        console.log("Going to inbox");
-        console.log(this._navigator);
-        this._navigator.navigate('Inbox');
-        //Navigate to inbox here
-      }
-    }
-    else if (data.payload.title === 'Match Offer')
-    {
-      if(data.action === 'tap')
-      {
-        console.log('Tapped match offer');
-          Alert.alert(
-            'Match Offer',
-            data.payload.message,
-            [
-              {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload.id, 'later')},
-              {
-                text: 'No',
-                onPress: () => PushNotification.setStatus(data.payload.id, 'rejected'),
-                style: 'cancel',
-              },
-              {text: 'Yes', onPress: () => this._acceptMatch(data)},
-            ],
-            {cancelable: false},
-          );
-      }
-      if(data.action === 'automatic')
-      {
-        console.log('Missed match offer');
-        PushNotification.setStatus(data.payload.id, 'missed');
-      }
-      if(data.action === 'pan' || data.action === 'cancel'){
-        console.log('Panned match offer');
-        PushNotification.setStatus(data.payload.id, 'later');
+        if(data.action === 'tap')
+        {
+          console.log('Tapped match offer');
+            Alert.alert(
+              'Match Offer',
+              data.payload.message,
+              [
+                {text: 'Maybe later', onPress: () => PushNotification.setStatus(data.payload.id, 'later')},
+                {
+                  text: 'No',
+                  onPress: () => PushNotification.setStatus(data.payload.id, 'rejected'),
+                  style: 'cancel',
+                },
+                {text: 'Yes', onPress: () => this._acceptMatch(data)},
+              ],
+              {cancelable: false},
+            );
+        }
+        if(data.action === 'automatic')
+        {
+          console.log('Missed match offer');
+          PushNotification.setStatus(data.payload.id, 'missed');
+        }
+        if(data.action === 'pan' || data.action === 'cancel'){
+          console.log('Panned match offer');
+          PushNotification.setStatus(data.payload.id, 'later');
+        }
       }
     }
   }
