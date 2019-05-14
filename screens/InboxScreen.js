@@ -61,7 +61,7 @@ export default class InboxScreen extends React.Component {
             //console.log(JSON.parse(res._bodyText));
             this.state.matches = JSON.parse(res._bodyText);
             this.setState({matches: this.state.matches});
-        })
+        });
   }
 
   rateRequest(matchID)

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Platform, StatusBar, StyleSheet, View, Alert, AppState, AsyncStorage } from 'react-native';
-import { AppLoading, Asset, Font, Icon, Permissions, Notifications, Location } from 'expo';
+import { AppLoading, Asset, Font, Icon, Permissions, Notifications, Location, TaskManager } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
 import MainTabNavigator from './navigation/MainTabNavigator';
 import PushNotification from './src/pushNotifications';
@@ -32,6 +32,8 @@ export default class App extends React.Component {
     markers: [{ id: 'currpos', lat: -1, lng: -1, color: 'blue' }, { id: 'selected_place', lat: -1, lng: -1, color: 'red' }],
   };
 
+  
+
   componentDidMount()
   {
     Permissions.askAsync(Permissions.NOTIFICATIONS);
@@ -42,8 +44,6 @@ export default class App extends React.Component {
       priority: 'max',
     });
     this._notificationSubscription = Notifications.addListener(this._handleNotification);
-    AppState.addEventListener('change', this._handleAppStateChange);
-    this._showPosition();
   }
 
   render() {
@@ -132,7 +132,7 @@ export default class App extends React.Component {
 
   _showPosition = async () => {
     if (navigator.geolocation) {
-        watchId = navigator.geolocation.watchPosition(
+        watchId = navigator.geolocation.getCurrentPosition(
             position => {
                 //console.log(position);
                 this.setState(({
@@ -517,6 +517,7 @@ deg2rad = (deg)=>{
         console.log(data.payload.to);
         if(data.action === 'tap')
         {
+          this._showPosition();
           console.log("Places:");
           console.log(data.payload.places[0]);
           const place = data.payload.places;

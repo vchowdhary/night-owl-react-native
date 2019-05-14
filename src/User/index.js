@@ -21,7 +21,7 @@ import config from '../../config';
 
 
 console.log(config);
-const url = 'http://128.237.192.10:4500';
+const url = config.url;
 
 //'http://128.237.220.65:4500'
 
@@ -259,13 +259,16 @@ class User {
      * rejects with an error.
      */
     async signup(id, password, profile) {
+        console.log("Signing up");
         console.log(id);
-        const reqURL = `${url + API}/${encodeURIComponent(id)}`;
+        const reqURL = url + `/api/users/${encodeURIComponent(id)}`;
 
+        console.log(reqURL);
         console.log(id);
         console.log(password);
-        console.log(profile);
+        console.log(JSON.stringify(profile));
         
+        console.log("fetching");
         await fetch(reqURL, {
             method: 'PUT',
             headers: {
@@ -273,10 +276,10 @@ class User {
               },
             body: JSON.stringify({ password, profile }),
         })
-        .then(res => {
+        .then((res) => {
             console.log(res.status)
             if (res.status === 201){
-                console.log('Success!!');
+                console.log('Success!! Signed up!');
                 this._id = id;
                 return this;
             }

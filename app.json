@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "night-owl-react-native",
+    "name": "on_demand_work",
     "description": "On Demand Work App.",
-    "slug": "night-owl-react-native",
+    "slug": "on_demand_work",
     "privacy": "public",
     "sdkVersion": "32.0.0",
     "platforms": [

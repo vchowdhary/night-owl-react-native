@@ -1,5 +1,5 @@
 import React from 'react';
-import { Location, TaskManager, Notifications } from 'expo';
+import { TaskManager, Location, Notifications } from 'expo';
 import {
     Image,
     Platform,
@@ -35,6 +35,22 @@ const API = '/api/match/';
 const API4 = '/api/locationtracking/';
 const API5 = '/api/statuses';
 const APIUsers = '/api/users';
+var id = null;
+var profile = null;
+var offers = true;
+
+console.log('Defining task');
+TaskManager.defineTask("backgroundlocation", async ({ data: { locations }, error }) => {
+  if (error) {
+    // check `error.message` for more details.
+    console.log(error.message);
+    return;
+  }
+  console.log('calling update location');
+  console.log(locations[0]);
+  updatePosition(locations[0]);
+});
+
 
 export default class MatchRequestScreen extends React.Component {
   constructor(props){
@@ -82,7 +98,6 @@ export default class MatchRequestScreen extends React.Component {
     'addMatchToRecords',
     'pushToDatabase',
     'onMarkerPositionChanged',
-     'updatePosition',
     'makeDeliveryOffer']
     .forEach(key => {
         this[key] = this[key].bind(this);
@@ -94,16 +109,6 @@ export default class MatchRequestScreen extends React.Component {
      * runs when component will mount
      */
     async componentWillMount(){
-      TaskManager.defineTask("backgroundlocation", async ({ data: { locations }, error }) => {
-        if (error) {
-          // check `error.message` for more details.
-          console.log(error.message);
-          return;
-        }
-        console.log(locations[0]);
-        this.updatePosition(locations[0]);
-      });
-
         this.renderDropdown('tutoringSubjects');
         this.renderDropdown('deliveryCategories');
         this.showPosition();
@@ -114,30 +119,13 @@ export default class MatchRequestScreen extends React.Component {
           this.setState({id: res});
           console.log('id');
           console.log(this._id);
+          id = res;
 
           console.log('Configuring Background Geolocations');
           Location.startLocationUpdatesAsync('backgroundlocation', {
-            distanceInterval: 1,
+            timeInterval: 2000,
             showsBackgroundLocationIndicator: true,
           });
-
-          console.log('Getting user profile');
-          const reqURL = url + `/api/users/${encodeURIComponent(res)}`;
-          await fetch(reqURL, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          })
-          .then((res) =>{
-            console.log(res.status);
-            if(res.status === 200 || res.status === 201 || res.status === 204)
-            {
-              console.log('Success');
-              console.log(JSON.parse(res._bodyText));
-              this.setState({profile: JSON.parse(res._bodyText)});
-            }
-          });    
           
           return res;
         });
@@ -365,9 +353,10 @@ renderDropdownService(service){
         await this.addMatchToRecords(this.state.request, true)
         .then(async (matchID) => {
           console.log(matchID);
+          console.log(this.state.id);
 
           console.log("Getting matches");
-          await fetch(url + API + '?limit=' + 5 + '&request=' + JSON.stringify(this.state.request) + '&matchID=' + matchID + '&requester_id=' + this._id,
+          await fetch(url + API + '?limit=' + 5 + '&request=' + JSON.stringify(this.state.request) + '&matchID=' + matchID + '&requester_id=' + this.state.id,
           {
               method: 'GET'
           })
@@ -403,79 +392,6 @@ renderDropdownService(service){
       this.setState({offers: false});
     }
 
-    updatePosition = async (location) =>
-  {
-    console.log('Updated position');
-    console.log(this.state.id);
-    console.log('Received new locations', location);
-    console.log('latitude', location.coords.latitude);
-    console.log('longitude', location.coords.longitude);
-    await fetch(url + API4, {
-      method: 'PUT',
-      headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          userID: this.state.id
-        }),
-    })
-    .then(res => {
-        console.log(res.status)
-        if (res.status === 204){
-            console.log('Success!!');
-        }
-    })
-    .catch((error) => {
-        console.log(error);
-        return error;
-    });
-
-    //https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=1500&type=restaurant&keyword=cruise&key=AIzaSyBfxlrjGDrdWc8Ycg9WA9dAi5bJcEuO1_g
-    if(this.state.profile.delivery["Food"] !== null && this.state.offers)
-    {
-      console.log(this.state.profile.delivery["Food"]);
-      console.log(this.state.profile.delivery['timetopickup']);
-      const distance = 100 * this.state.profile.delivery['timetopickup'];
-      console.log(distance);
-
-      const places_url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + 
-                          this.state.currentLatLng.lat +',' + this.state.currentLatLng.lng +
-                          '&radius='+distance+
-                          '&type=restaurant&opennow&fields=name,geometry/location&key=AIzaSyBfxlrjGDrdWc8Ycg9WA9dAi5bJcEuO1_g';
-      await fetch(places_url)
-      .then(async (res) =>
-      {
-          let result = JSON.parse(res._bodyText);
-          console.log(result.results);
-          if(JSON.parse(res._bodyText) !== [])
-          {
-            var localNotif = {
-              title: "Would you like to make an offer for delivery?", 
-              body: "We've detected that you're close to several restaurants and have expressed an interest in delivering food.", 
-              data: { 
-                      to: this.state.id,
-                      places: result.results,
-                      message: "We've detected that you're close to several restaurants and have expressed an interest in delivering food.",
-                      time: 0,
-                      title: "Would you like to make an offer for delivery?"
-                    }, 
-              android: { 
-                sound: true 
-              }, 
-              ios: { 
-                sound: true 
-              }
-            }
-            await Notifications.presentLocalNotificationAsync(localNotif);
-        }
-      });
-    
-  }
-}
-
-
     /**
      * adds to match history
      * @param {JSON} reqobj - request obj
@@ -492,7 +408,7 @@ renderDropdownService(service){
                     Accept: 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ requester_id: this._id, provider_id: '', service_type: reqobj.type, subject_1: reqobj.subject_1, subject_2: reqobj.subject_2, subject_3: reqobj.subject_3, 
+                body: JSON.stringify({ requester_id: this.state.id, provider_id: '', service_type: reqobj.type, subject_1: reqobj.subject_1, subject_2: reqobj.subject_2, subject_3: reqobj.subject_3, 
                     details: reqobj.details, time: reqobj.timetodeliver, location: { lat: this.state.markers[0].lat, lng: this.state.markers[0].lng }, provider_score: 0, requester_score: 0, dropOffLocation: reqobj.dropofflocation })
             })
             .then((res) => {
@@ -624,6 +540,113 @@ renderDropdownService(service){
     );
   }
 }
+
+updatePosition = async (location) =>
+  {
+    console.log('Updated position');
+    const id = await AsyncStorage.getItem("userToken")
+        .then(async (res) => {
+          console.log(res);
+          console.log('id');
+         return res;
+    });
+    console.log(id);
+
+    if(id != null)
+    {
+      console.log('Received new locations', location);
+      console.log('latitude', location.coords.latitude);
+      console.log('longitude', location.coords.longitude);
+      await fetch(url + API4, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            userID: id
+          }),
+      })
+      .then(res => {
+          console.log(res.status)
+          if (res.status === 204){
+              console.log('Success!!');
+          }
+      })
+      .catch((error) => {
+          console.log(error);
+          return error;
+      });
+  
+      if(!profile){
+        console.log('Getting user profile');
+        const reqURL = url + `/api/users/${encodeURIComponent(id)}`;
+        console.log(reqURL);
+        profile = await fetch(reqURL, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })
+            .then((res) =>{
+              console.log(res.status);
+              if(res.status === 200 || res.status === 201 || res.status === 204)
+              {
+                console.log('Success');
+                console.log(JSON.parse(res._bodyText));
+                return JSON.parse(res._bodyText);
+              }
+            }); 
+  
+    }
+  }
+
+    //https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=1500&type=restaurant&keyword=cruise&key=AIzaSyBfxlrjGDrdWc8Ycg9WA9dAi5bJcEuO1_g
+    if(profile.delivery["Food"] !== null && offers)
+    {
+      console.log('can deliver');
+      console.log(profile.delivery["Food"]);
+      console.log(profile.delivery['timetopickup']);
+      const distance = 100 * profile.delivery['timetopickup'];
+      console.log(distance);
+
+      const places_url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + 
+                          location.coords.latitude +',' + location.coords.longitude +
+                          '&radius='+distance+
+                          '&type=restaurant&opennow&fields=name,geometry/location&key=AIzaSyBfxlrjGDrdWc8Ycg9WA9dAi5bJcEuO1_g';
+      await fetch(places_url)
+      .then(async (res) =>
+      {
+          let result = JSON.parse(res._bodyText);
+          console.log(result.results);
+          if(JSON.parse(res._bodyText) !== [])
+          {
+            var localNotif = {
+              title: "Would you like to make an offer for delivery?", 
+              body: "We've detected that you're close to several restaurants and have expressed an interest in delivering food.", 
+              data: { 
+                      to: id,
+                      places: result.results,
+                      message: "We've detected that you're close to several restaurants and have expressed an interest in delivering food.",
+                      time: 0,
+                      title: "Would you like to make an offer for delivery?"
+                    }, 
+              android: { 
+                sound: true 
+              }, 
+              ios: { 
+                sound: true 
+              }
+            }
+            await Notifications.presentLocalNotificationAsync(localNotif);
+        }
+      });
+    
+  }
+}
+
+
 
 const styles = StyleSheet.create({
   biglabelText:{
